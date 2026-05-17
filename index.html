@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BRZL Staking 🔨</title>
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Nunito:wght@700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Tema Taller de Carpintería */
+  --bg: #1a0f07;
+  --wood-dark: #2c1a0e;
+  --wood-mid: #4a2c1a;
+  --wood-light: #6b3d1e;
+  --gold: #c8941a;
+  --gold-light: #f0b840;
+  --gold-bright: #ffd700;
+  --copper: #b87333;
+  --cream: #f5e6c8;
+  --warm-white: #fff8ee;
+  --green: #4a7c3f;
+  --green-light: #6ab04c;
+  --red-wood: #8b2500;
+  --white: #fff8ee;
+  --card: rgba(74,44,26,0.6);
+  --border: rgba(200,148,26,0.3);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 40px,
+      rgba(200,148,26,0.03) 40px,
+      rgba(200,148,26,0.03) 41px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 60px,
+      rgba(74,44,26,0.4) 60px,
+      rgba(74,44,26,0.4) 61px
+    ),
+    linear-gradient(160deg, #1a0f07 0%, #2c1a0e 40%, #1a0f07 70%, #0d0700 100%);
+  color: var(--warm-white);
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+body::after {
+  content:'';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 999;
+}
+.app { padding-bottom: 80px; position: relative; z-index: 1; }
+
+/* HEADER */
+.header { background: linear-gradient(135deg, #2c1a0e, #1a0f07); border-bottom: 3px solid var(--gold); padding: 12px 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+.header-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.logo-text { font-family:'Rye',cursive; font-size:22px; letter-spacing:2px; color:var(--gold-light); text-shadow:2px 2px 0 #8b6010,1px 1px 8px rgba(200,148,26,0.5); flex:1; }
+.logo-emoji { animation:wiggle 1.5s ease-in-out infinite; }
+@keyframes wiggle { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+.wallet-chip { background:#1a1a1a; border:1px solid var(--yellow); border-radius:8px; padding:6px 12px; font-size:11px; font-weight:800; color:var(--yellow); }
+.balance-strip { display:flex; gap:8px; }
+.bal-item { flex:1; background:rgba(44,26,14,0.8); border:1px solid var(--gold); border-radius:10px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; box-shadow:inset 0 1px 0 rgba(200,148,26,0.2); }
+.bal-label { font-size:11px; color:rgba(255,255,255,0.4); font-weight:800; }
+.bal-val { font-size:14px; font-weight:900; color:var(--gold-bright); }
+
+/* TABS */
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* STAKING */
+.staking-header { text-align:center; padding:20px 16px 0; }
+.big-title { font-family:'Rye',cursive; font-size:36px; letter-spacing:3px; line-height:1; background:linear-gradient(90deg,var(--gold-bright),var(--gold-light),var(--copper)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:10px; }
+.mem-pill { display:inline-flex; align-items:center; gap:6px; border:2px solid var(--gold); border-radius:50px; padding:7px 18px; font-size:13px; font-weight:900; color:var(--gold-bright); background:rgba(200,148,26,0.1); margin-bottom:4px; }
+.mem-sub { font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:16px; }
+
+.stake-card { margin:0 14px 12px; border:2px solid var(--gold); border-radius:18px; background:linear-gradient(135deg,#2c1a0e,#1a0f07); overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(200,148,26,0.2); }
+.stake-card-top { background:linear-gradient(135deg,#3d2210,#2c1a0e); padding:16px; border-bottom:1px solid rgba(200,148,26,0.3); text-align:center; }
+.stake-label { font-size:11px; font-weight:800; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+.stake-val-box { display:inline-flex; align-items:center; gap:10px; background:rgba(44,26,14,0.8); border:1px solid rgba(200,148,26,0.4); border-radius:12px; padding:10px 20px; font-size:20px; font-weight:900; color:var(--gold-bright); }
+.stake-card-bottom { padding:16px; text-align:center; }
+.interest-label { font-size:11px; font-weight:800; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+.interest-num { font-family:'Orbitron',monospace; font-size:26px; font-weight:900; color:var(--gold-bright); text-shadow:0 0 20px rgba(255,215,0,0.5),0 0 40px rgba(200,148,26,0.3); margin-bottom:6px; word-break:break-all; }
+.timer-txt { font-size:11px; color:rgba(255,255,255,0.35); font-weight:700; }
+.meme-stamp { font-family:'Rye',cursive; font-size:11px; letter-spacing:2px; color:rgba(200,148,26,0.4); text-align:center; margin:-4px 0 10px; }
+
+.btn-meme { display:flex; align-items:center; justify-content:center; gap:8px; width:calc(100% - 28px); margin:0 14px 8px; padding:16px; border:none; border-radius:14px; font-family:'Rye',cursive; font-size:20px; letter-spacing:2px; cursor:pointer; position:relative; overflow:hidden; transition:transform 0.1s; }
+.btn-meme:active { transform:scale(0.97); }
+.btn-meme::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,255,255,0.12) 0%,transparent 50%); }
+.btn-stake { background:linear-gradient(135deg,var(--gold-light),var(--gold)); color:#1a0f07; box-shadow:0 4px 0 #7a5a08,0 6px 20px rgba(200,148,26,0.4); }
+.btn-stake:active { box-shadow:0 2px 0 #7a5a08; transform:translateY(2px); }
+.btn-cyan-btn { background:linear-gradient(135deg,#d4853a,var(--copper)); color:#1a0f07; box-shadow:0 4px 0 #7a4a1a,0 6px 20px rgba(184,115,51,0.4); }
+.btn-cyan-btn:active { box-shadow:0 2px 0 #009999; transform:translateY(2px); }
+
+.btn-row-2 { display:flex; gap:8px; margin:0 14px 8px; }
+.btn-half { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:12px 8px; border:none; border-radius:14px; font-family:'Rye',cursive; font-size:16px; letter-spacing:1px; cursor:pointer; transition:transform 0.1s; position:relative; overflow:hidden; }
+.btn-half::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,255,255,0.1) 0%,transparent 60%); }
+.btn-half:active { transform:scale(0.97); }
+.btn-orange { background:linear-gradient(135deg,#8b4513,#6b3d1e); color:var(--cream); box-shadow:0 4px 0 #3d1a0a; border:1px solid rgba(200,148,26,0.3); }
+.btn-pink { background:linear-gradient(135deg,#6b2a1a,#4a1a0e); color:var(--cream); box-shadow:0 4px 0 #2c0e07; border:1px solid rgba(200,148,26,0.3); }
+.btn-sub { font-size:10px; font-family:'Nunito',sans-serif; font-weight:800; opacity:0.7; }
+
+/* MISIONES */
+.misiones-top { text-align:center; padding:20px 14px 12px; }
+.misiones-big { font-family:'Rye',cursive; font-size:38px; letter-spacing:3px; color:var(--gold-bright); text-shadow:2px 2px 0 #7a5a08,0 0 20px rgba(200,148,26,0.3); margin-bottom:4px; }
+.misiones-sub { font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:14px; }
+
+.earned-box { display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg,#2c1a0e,#1a0f07); border:2px solid var(--gold); border-radius:14px; padding:12px 16px; margin:0 14px 14px; box-shadow:0 0 20px rgba(200,148,26,0.2); }
+.earned-lbl { font-size:11px; color:rgba(255,255,255,0.4); font-weight:800; text-transform:uppercase; letter-spacing:1px; }
+.earned-num { font-family:'Orbitron',monospace; font-size:22px; font-weight:900; color:var(--gold-bright); }
+.earned-right { font-size:36px; }
+
+.section-tag { font-family:'Rye',cursive; font-size:16px; letter-spacing:2px; color:rgba(200,148,26,0.6); padding:0 14px; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.section-tag::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,rgba(200,148,26,0.4),transparent); }
+
+.mission-card { margin:0 14px 8px; background:linear-gradient(135deg,rgba(44,26,14,0.9),rgba(26,15,7,0.9)); border:1px solid rgba(200,148,26,0.25); border-radius:16px; padding:14px; display:flex; align-items:center; gap:12px; transition:border-color 0.2s,background 0.2s; }
+.mission-card.done { border-color:rgba(200,148,26,0.6); background:rgba(200,148,26,0.08); }
+.m-icon { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+.m-icon-tg { background:linear-gradient(135deg,#229ed9,#1565a8); }
+.m-icon-x { background:#111; border:1px solid #333; }
+.m-icon-day { background:linear-gradient(135deg,#FFE600,#FF6B00); }
+.m-icon-share { background:linear-gradient(135deg,#39FF14,#00aa00); }
+.m-icon-stake { background:linear-gradient(135deg,#FF2D87,#aa0055); }
+.m-info { flex:1; min-width:0; }
+.m-name { font-size:14px; font-weight:900; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.m-desc { font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:5px; }
+.m-reward { display:inline-flex; align-items:center; gap:4px; background:rgba(200,148,26,0.1); border:1px solid rgba(200,148,26,0.4); border-radius:50px; padding:2px 10px; font-size:11px; font-weight:900; color:var(--gold-bright); }
+.m-cooldown { font-size:10px; color:rgba(255,255,255,0.3); margin-top:3px; font-weight:700; }
+.m-action { flex-shrink:0; }
+
+.btn-go { border-radius:50px; padding:8px 15px; font-family:'Rye',cursive; font-size:15px; letter-spacing:1px; border:none; cursor:pointer; transition:transform 0.1s; background:linear-gradient(135deg,var(--gold-light),var(--gold)); color:#1a0f07; box-shadow:0 3px 0 #7a5a08; }
+.btn-go:active { transform:translateY(2px); box-shadow:0 1px 0 #aa9900; }
+.btn-done { border-radius:50px; padding:8px 15px; font-family:'Rye',cursive; font-size:15px; letter-spacing:1px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.25); cursor:not-allowed; }
+.btn-claim { border-radius:50px; padding:8px 15px; font-family:'Rye',cursive; font-size:15px; letter-spacing:1px; border:none; cursor:pointer; background:linear-gradient(135deg,var(--gold-light),var(--gold)); color:#1a0f07; box-shadow:0 3px 0 #7a5a08; animation:popglow 0.8s ease-in-out infinite alternate; }
+@keyframes popglow { from{box-shadow:0 3px 0 #7a5a08,0 0 10px rgba(200,148,26,0.3)} to{box-shadow:0 3px 0 #7a5a08,0 0 25px rgba(255,215,0,0.6)} }
+
+.prog-wrap { background:rgba(255,255,255,0.05); border-radius:50px; height:5px; margin-top:5px; overflow:hidden; }
+.prog-fill { height:100%; background:linear-gradient(90deg,var(--green),var(--cyan)); border-radius:50px; transition:width 0.5s; }
+
+/* MEMBRESÍA */
+.mem-hero { text-align:center; padding:20px 14px 14px; }
+.mem-big { font-family:'Rye',cursive; font-size:36px; letter-spacing:3px; color:var(--gold-bright); text-shadow:2px 2px 0 #7a5a08,0 0 20px rgba(200,148,26,0.3); margin-bottom:6px; }
+.mem-sub-txt { font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:12px; line-height:1.5; }
+.mem-current { display:inline-flex; align-items:center; gap:6px; border:2px solid var(--yellow); border-radius:50px; padding:8px 20px; font-size:14px; font-weight:900; color:var(--yellow); background:rgba(255,230,0,0.06); margin-bottom:4px; }
+.mem-current-lbl { font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:14px; }
+
+.mem-list { margin:0 14px; background:linear-gradient(135deg,#2c1a0e,#1a0f07); border:2px solid var(--gold); border-radius:18px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.4); }
+.mem-list-header { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.vip-tag { background:linear-gradient(135deg,var(--gold-bright),var(--gold)); color:#1a0f07; font-family:'Rye',cursive; font-size:14px; letter-spacing:2px; padding:3px 10px; border-radius:6px; box-shadow:0 2px 0 #7a5a08; }
+.vip-title { font-family:'Rye',cursive; font-size:18px; letter-spacing:2px; color:rgba(255,255,255,0.7); }
+.mem-item { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; border-bottom:1px solid rgba(255,255,255,0.04); gap:10px; }
+.mem-item:last-child { border-bottom:none; }
+.mem-badge { border-radius:50px; padding:7px 14px; font-size:13px; font-weight:900; white-space:nowrap; }
+.b-bronze { background:linear-gradient(135deg,#7a4a2a,#5a3018); color:#ffcb8a; border:1px solid #aa6633; }
+.b-silver { background:linear-gradient(135deg,#555,#333); color:#ddd; border:1px solid #777; }
+.b-gold { background:linear-gradient(135deg,#cc9900,#886600); color:#fff7cc; border:1px solid #ffcc00; }
+.b-platinum { background:linear-gradient(135deg,#00aa99,#006655); color:#ccffee; border:1px solid #00ddaa; }
+.b-diamond { background:linear-gradient(135deg,#4488cc,#224488); color:#ccddff; border:1px solid #88aaff; }
+.buy-wld { border-radius:50px; padding:8px 16px; font-family:'Rye',cursive; font-size:14px; letter-spacing:1px; border:none; cursor:pointer; background:linear-gradient(135deg,var(--gold-light),var(--gold)); color:#1a0f07; box-shadow:0 3px 0 #7a5a08; transition:transform 0.1s; white-space:nowrap; }
+.buy-wld:active { transform:translateY(2px); }
+
+/* NAV */
+.bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; display:flex; background:linear-gradient(0deg,#1a0f07,#2c1a0e); border-top:2px solid var(--gold); z-index:50; box-shadow:0 -4px 20px rgba(0,0,0,0.5); }
+.nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:10px 4px 14px; background:none; border:none; color:rgba(200,148,26,0.4); font-family:'Rye',cursive; font-size:11px; letter-spacing:1px; cursor:pointer; transition:color 0.15s; }
+.nav-btn.active { color:var(--gold-bright); text-shadow:0 0 10px rgba(255,215,0,0.5); }
+.nav-btn svg { width:22px; height:22px; }
+
+/* MODAL */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:100; align-items:flex-end; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal { background:linear-gradient(180deg,#2c1a0e,#1a0f07); border:2px solid var(--gold); border-radius:20px 20px 0 0; padding:24px 18px 36px; width:100%; max-width:430px; box-shadow:0 -8px 30px rgba(0,0,0,0.6); }
+.modal h3 { font-family:'Rye',cursive; font-size:24px; letter-spacing:2px; color:var(--gold-bright); margin-bottom:14px; text-align:center; text-shadow:1px 1px 4px rgba(200,148,26,0.5); }
+.modal-input { width:100%; background:rgba(44,26,14,0.8); border:1px solid rgba(200,148,26,0.4); border-radius:12px; padding:14px 16px; font-size:20px; font-weight:900; color:white; font-family:'Nunito',sans-serif; margin-bottom:14px; outline:none; }
+.modal-input:focus { border-color:var(--gold-bright); box-shadow:0 0 0 2px rgba(200,148,26,0.2); }
+.modal-btns { display:flex; gap:10px; }
+.modal-cancel { flex:1; padding:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:rgba(255,255,255,0.5); font-family:'Rye',cursive; font-size:18px; letter-spacing:1px; cursor:pointer; }
+.modal-confirm { flex:1; padding:14px; background:linear-gradient(135deg,var(--gold-light),var(--gold)); border:none; border-radius:50px; color:#1a0f07; font-family:'Rye',cursive; font-size:18px; letter-spacing:1px; cursor:pointer; box-shadow:0 4px 0 #7a5a08; }
+
+/* TOAST */
+.toast { position:fixed; top:16px; left:50%; transform:translateX(-50%) translateY(-100px); background:linear-gradient(135deg,#3d2210,#2c1a0e); border:2px solid var(--gold); border-radius:12px; padding:12px 20px; font-size:14px; font-weight:800; color:var(--gold-bright); z-index:200; transition:transform 0.3s cubic-bezier(.175,.885,.32,1.275); white-space:nowrap; box-shadow:0 4px 30px rgba(200,148,26,0.3); }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+@keyframes coinFloat { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(-80px) rotate(360deg);opacity:0} }
+.coin-float { position:fixed; font-size:28px; pointer-events:none; z-index:300; animation:coinFloat 1.2s ease-out forwards; }
+
+/* SWAP */
+.swap-hero { text-align:center; padding:20px 14px 6px; }
+.swap-big { font-family:'Rye',cursive; font-size:38px; letter-spacing:3px; color:var(--cyan); text-shadow:3px 3px 0 #006688; margin-bottom:4px; }
+.swap-sub { font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:16px; }
+.swap-card { margin:0 14px 10px; background:#111; border:2px solid rgba(0,255,255,0.2); border-radius:20px; padding:20px 16px; }
+.swap-pair-toggle { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:18px; }
+.pair-btn { flex:1; padding:9px 10px; border-radius:50px; font-family:'Rye',cursive; font-size:14px; letter-spacing:1px; border:2px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.4); cursor:pointer; transition:all 0.2s; }
+.pair-btn.active { border-color:var(--cyan); background:rgba(0,255,255,0.08); color:var(--cyan); }
+.swap-box { background:#1a1a1a; border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px; margin-bottom:8px; }
+.swap-box-label { font-size:11px; font-weight:800; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:flex; justify-content:space-between; }
+.swap-box-label span:last-child { color:var(--cyan); cursor:pointer; }
+.swap-token-row { display:flex; align-items:center; gap:10px; }
+.swap-token-name { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:50px; padding:7px 14px; font-size:14px; font-weight:900; white-space:nowrap; }
+.swap-input { flex:1; background:transparent; border:none; outline:none; font-size:22px; font-weight:900; color:white; font-family:'Nunito',sans-serif; text-align:right; width:0; }
+.swap-input::placeholder { color:rgba(255,255,255,0.2); }
+.swap-arrow-btn { display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:#222; border:2px solid rgba(0,255,255,0.3); margin:0 auto 8px; cursor:pointer; font-size:18px; transition:transform 0.3s; }
+.swap-arrow-btn:hover { transform:rotate(180deg); border-color:var(--cyan); }
+.swap-rate-box { background:rgba(0,255,255,0.04); border:1px solid rgba(0,255,255,0.12); border-radius:12px; padding:10px 14px; margin-bottom:14px; }
+.swap-rate-row { display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:700; color:rgba(255,255,255,0.5); margin-bottom:4px; }
+.swap-rate-row:last-child { margin-bottom:0; }
+.swap-rate-row span:last-child { color:rgba(255,255,255,0.8); }
+.swap-rate-highlight { color:var(--cyan) !important; }
+.btn-swap { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:16px; border:none; border-radius:14px; font-family:'Rye',cursive; font-size:22px; letter-spacing:2px; cursor:pointer; background:linear-gradient(135deg,#00BFFF,#0066FF); color:#fff; box-shadow:0 4px 0 #0033AA,0 6px 25px rgba(0,100,255,0.5); transition:transform 0.1s; position:relative; overflow:hidden; }
+.btn-swap::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,255,255,0.15) 0%,transparent 50%); }
+.btn-swap:active { transform:translateY(2px); box-shadow:0 2px 0 #006688; }
+.btn-swap:disabled { background:#333; color:#555; box-shadow:none; cursor:not-allowed; }
+.swap-history { margin:0 14px; }
+.swap-history-title { font-family:'Rye',cursive; font-size:16px; letter-spacing:2px; color:rgba(255,255,255,0.3); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.swap-history-title::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.08); }
+.swap-history-empty { text-align:center; padding:16px; font-size:13px; color:rgba(255,255,255,0.3); font-weight:700; }
+.swap-hist-item { background:#111; border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:12px 14px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
+.swap-hist-left { display:flex; flex-direction:column; gap:2px; }
+.swap-hist-pair { font-size:13px; font-weight:900; color:var(--cyan); }
+.swap-hist-time { font-size:10px; color:rgba(255,255,255,0.3); font-weight:700; }
+.swap-hist-amount { font-size:13px; font-weight:900; color:var(--green); }
+</style>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash" style="
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(160deg,#1a0f07,#2c1a0e,#1a0f07);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:20px;padding:30px;
+  font-family:'Nunito',sans-serif;
+">
+  <img src="data:image/jpeg;base64,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" 
+    style="width:120px;height:120px;border-radius:50%;border:3px solid #FFE600;object-fit:cover;"/>
+  
+  <div style="font-family:'Rye',cursive;font-size:32px;letter-spacing:3px;color:#FFE600;text-shadow:2px 2px 0 #FF6B00;text-align:center;">
+    BARZOLA LEGACY
+  </div>
+  
+  <div style="font-family:'Rye',cursive;font-size:20px;letter-spacing:2px;color:#39FF14;text-align:center;">
+    ✨ BRZL STAKING ✨
+  </div>
+
+  <div style="font-size:14px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.6;">
+    Conectá tu wallet de<br>World App para continuar
+  </div>
+
+  <button onclick="splashConnect()" style="
+    background:linear-gradient(135deg,#f0b840,#c8941a);border:none;border-radius:50px;
+    padding:18px 48px;
+    font-family:'Rye',cursive;font-size:22px;letter-spacing:2px;
+    color:#000;cursor:pointer;
+    box-shadow:0 4px 0 #886600, 0 6px 20px rgba(255,230,0,0.4);
+    margin-top:10px;
+  ">
+    🔗 CONECTAR WALLET
+  </button>
+
+  <div id="splash-status" style="font-size:13px;color:rgba(255,255,255,0.4);min-height:20px;"></div>
+</div>
+
+<div class="app" id="main-app" style="display:none;">
+
+  <!-- BANNER AVISO CAMBIO DE CONTRATO (visible 7 dias) -->
+  <div id="migration-banner" style="display:none;background:linear-gradient(135deg,#8B0000,#FF4500);color:#fff;padding:14px 16px;margin:8px 14px;border-radius:14px;border:2px solid #FFD700;box-shadow:0 0 20px rgba(255,69,0,0.5);font-size:13px;line-height:1.5;position:relative;">
+    <button onclick="closeMigrationBanner()" style="position:absolute;top:6px;right:8px;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;font-weight:bold;">✕</button>
+    <div style="font-family:'Rye',cursive;font-size:16px;color:#FFD700;margin-bottom:6px;">⚠️ AVISO IMPORTANTE</div>
+    <div>Hubo un cambio de contrato. Si hiciste stake antes y no aparece tu balance, contactanos en Telegram para devolver tus BRZL.</div>
+    <a href="https://t.me/BarzolaLegacy28" target="_blank" style="display:inline-block;margin-top:10px;background:#FFD700;color:#000;padding:8px 14px;border-radius:8px;font-weight:bold;text-decoration:none;font-size:13px;">📱 CONTACTAR EN TELEGRAM</a>
+  </div>
+
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <img src="data:image/jpeg;base64,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" style="width:44px;height:44px;border-radius:50%;border:2px solid var(--yellow);object-fit:cover;flex-shrink:0;" alt="BRZL Logo"/>
+      <div class="logo-text">BARZOLA LEGACY</div>
+      <button id="connect-btn" onclick="connectWallet()" style="background:linear-gradient(135deg,var(--gold-light),var(--gold));border:none;border-radius:8px;padding:6px 10px;font-family:'Rye',cursive;font-size:13px;letter-spacing:1px;color:#1a0f07;cursor:pointer;box-shadow:0 2px 0 #7a5a08;">CONECTAR</button>
+      <div id="wallet-display" style="display:none;background:#1a1a1a;border:1px solid var(--yellow);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:800;color:var(--yellow);"></div>
+    </div>
+    <div class="balance-strip">
+      <div class="bal-item">
+        <span class="bal-label">BRZL</span>
+        <span class="bal-val" id="brzl-balance">0.00</span>
+      </div>
+      <div class="bal-item">
+        <span class="bal-label">WLD</span>
+        <span class="bal-val" style="color:var(--cyan)" id="wld-balance">0.00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAKING TAB -->
+  <div id="tab-staking" class="tab-content active">
+    <div class="staking-header">
+      <div class="big-title">✨ BRZL STAKING ✨</div>
+      <div class="mem-sub">Mi Membresía actual:</div>
+      <div class="mem-pill" id="staking-mem-badge">🔷 Diamond APY 500%</div>
+    </div>
+    <div style="height:14px"></div>
+    <div class="stake-card">
+      <div class="stake-card-top">
+        <div class="stake-label">Mi Balance en Staking</div>
+        <div class="stake-val-box">🪙 <span id="staked-amount">0.0000</span></div>
+      </div>
+      <div class="stake-card-bottom">
+        <div class="interest-label">Intereses Ganados 💰</div>
+        <div class="interest-num" id="interests-display">0.00000000</div>
+        <div class="timer-txt" id="timer-display">Sin staking activo</div>
+      </div>
+    </div>
+    <div class="meme-stamp">TO THE MOON 🚀🌕</div>
+    <button class="btn-meme btn-stake" onclick="openModal('stake')">📈 HACER STAKING</button>
+    <div class="btn-row-2">
+      <button class="btn-half btn-orange" onclick="openModal('withdraw-balance')">
+        💸 RETIRAR<span class="btn-sub">BALANCE</span>
+      </button>
+      <button class="btn-half btn-pink" onclick="openModal('withdraw-interests')">
+        💰 RETIRAR<span class="btn-sub">INTERESES</span>
+      </button>
+    </div>
+    <button class="btn-meme btn-cyan-btn" onclick="switchTab('misiones')">🎁 BRZL GRATIS ACÁ</button>
+  </div>
+
+  <!-- MISIONES TAB -->
+  <div id="tab-misiones" class="tab-content">
+    <div class="misiones-top">
+      <div class="misiones-big">🎁 MISSIONS</div>
+      <div class="misiones-sub">Completá y ganás BRZL gratis 👇</div>
+    </div>
+    <div class="earned-box">
+      <div>
+        <div class="earned-lbl">Total Ganado</div>
+        <div class="earned-num" id="total-earned">0 BRZL</div>
+      </div>
+      <div class="earned-right">🏆</div>
+    </div>
+
+    <div class="section-tag">📌 PERMANENTES (+5 BRZL)</div>
+
+    <div class="mission-card" id="card-tg">
+      <div class="m-icon m-icon-tg">✈️</div>
+      <div class="m-info">
+        <div class="m-name">Seguir Telegram</div>
+        <div class="m-desc">t.me/BarzolaLegacy28</div>
+        <div class="m-reward">+5 BRZL</div>
+      </div>
+      <div class="m-action"><button class="btn-go" id="btn-tg" onclick="doMission('tg')">IR →</button></div>
+    </div>
+
+    <div class="mission-card" id="card-x">
+      <div class="m-icon m-icon-x">𝕏</div>
+      <div class="m-info">
+        <div class="m-name">Seguir en X</div>
+        <div class="m-desc">@barzolalegacy1</div>
+        <div class="m-reward">+5 BRZL</div>
+      </div>
+      <div class="m-action"><button class="btn-go" id="btn-x" onclick="doMission('x')">IR →</button></div>
+    </div>
+
+    <div style="height:6px"></div>
+    <div class="section-tag">⏰ DIARIAS (+2 BRZL c/u)</div>
+
+    <div class="mission-card" id="card-checkin">
+      <div class="m-icon m-icon-day">📅</div>
+      <div class="m-info">
+        <div class="m-name">Check-in Diario</div>
+        <div class="m-desc">Entrá una vez por día</div>
+        <div class="m-reward">+2 BRZL</div>
+        <div class="m-cooldown" id="cooldown-checkin"></div>
+      </div>
+      <div class="m-action"><button class="btn-claim" id="btn-checkin" onclick="doMission('checkin')">CLAIM</button></div>
+    </div>
+
+    <div class="mission-card" id="card-share">
+      <div class="m-icon m-icon-share">🔗</div>
+      <div class="m-info">
+        <div class="m-name">Compartir App</div>
+        <div class="m-desc">Compartí con un amigo hoy</div>
+        <div class="m-reward">+2 BRZL</div>
+        <div class="m-cooldown" id="cooldown-share"></div>
+      </div>
+      <div class="m-action"><button class="btn-go" id="btn-share" onclick="doMission('share')">IR →</button></div>
+    </div>
+
+    <div class="mission-card" id="card-stake-daily">
+      <div class="m-icon m-icon-stake">📈</div>
+      <div class="m-info">
+        <div class="m-name">Stake Hoy</div>
+        <div class="m-desc">Al menos 1 staking hoy</div>
+        <div class="m-reward">+2 BRZL</div>
+        <div class="m-cooldown" id="cooldown-stake-daily"></div>
+        <div class="prog-wrap"><div class="prog-fill" id="progress-stake" style="width:0%"></div></div>
+      </div>
+      <div class="m-action"><button class="btn-go" id="btn-stake-daily" onclick="switchTab('staking')">IR →</button></div>
+    </div>
+
+    <div style="height:8px"></div>
+  </div>
+
+  <!-- MEMBRESÍA TAB -->
+  <div id="tab-membresia" class="tab-content">
+    <div class="mem-hero">
+      <div class="mem-big">🚀 VIP ZONE 🚀</div>
+      <div class="mem-sub-txt">Mejorá tu membresía y<br>multiplicá tus ganancias 💎</div>
+      <div class="mem-current-lbl">Mi Membresía actual:</div>
+      <div class="mem-current" id="mem-tab-badge">🔷 Diamond APY 500%</div>
+    </div>
+    <div class="mem-list">
+      <div class="mem-list-header">
+        <div class="vip-tag">VIP</div>
+        <div class="vip-title">MEMBRESÍAS</div>
+      </div>
+      <div class="mem-item">
+        <div class="mem-badge b-bronze">🥉 Bronze APY 75%</div>
+        <button class="buy-wld" onclick="buyMembership('Bronze',75,10)">10 WLD</button>
+      </div>
+      <div class="mem-item">
+        <div class="mem-badge b-silver">🥈 Silver APY 125%</div>
+        <button class="buy-wld" onclick="buyMembership('Silver',125,25)">25 WLD</button>
+      </div>
+      <div class="mem-item">
+        <div class="mem-badge b-gold">🥇 Gold APY 175%</div>
+        <button class="buy-wld" onclick="buyMembership('Gold',175,50)">50 WLD</button>
+      </div>
+      <div class="mem-item">
+        <div class="mem-badge b-platinum">✨ Platinum APY 325%</div>
+        <button class="buy-wld" onclick="buyMembership('Platinum',325,100)">100 WLD</button>
+      </div>
+      <div class="mem-item">
+        <div class="mem-badge b-diamond">🔷 Diamond APY 500%</div>
+        <button class="buy-wld" onclick="buyMembership('Diamond',500,200)">200 WLD</button>
+      </div>
+    </div>
+    <div style="height:14px"></div>
+  </div>
+
+  <!-- SWAP TAB -->
+  <div id="tab-swap" class="tab-content">
+    <div class="swap-hero">
+      <div class="swap-big">🔄 SWAP</div>
+      <div class="swap-sub">Intercambiá BRZL ↔ WLD al instante ⚡</div>
+    </div>
+    <div class="swap-card">
+      <div class="swap-pair-toggle">
+        <button class="pair-btn active" id="pair-brzl-wld" onclick="setPair('BRZL','WLD')">BRZL → WLD</button>
+        <button class="pair-btn" id="pair-wld-brzl" onclick="setPair('WLD','BRZL')">WLD → BRZL</button>
+      </div>
+      <div class="swap-box">
+        <div class="swap-box-label"><span>ENVIÁS</span><span onclick="setMax()" style="cursor:pointer;color:var(--yellow);">MAX — <span id="swap-avail-bal">0.00</span></span></div>
+        <div class="swap-token-row">
+          <div class="swap-token-name" id="from-token">🪙 BRZL</div>
+          <input class="swap-input" id="swap-from-input" type="number" placeholder="0.00" min="0" step="any" oninput="calcSwapOutput()"/>
+        </div>
+      </div>
+      <div class="swap-arrow-btn" onclick="flipPair()">🔄</div>
+      <div class="swap-box">
+        <div class="swap-box-label"><span>RECIBÍS</span></div>
+        <div class="swap-token-row">
+          <div class="swap-token-name" id="to-token">💎 WLD</div>
+          <div class="swap-input" id="swap-to-output" style="color:var(--cyan);cursor:default">0.00</div>
+        </div>
+      </div>
+      <div class="swap-rate-box">
+        <div class="swap-rate-row"><span>Tasa</span><span class="swap-rate-highlight" id="swap-rate-txt">Cargando...</span></div>
+        <div class="swap-rate-row"><span>Fee</span><span>0.3%</span></div>
+        <div class="swap-rate-row"><span>Red</span><span>World Chain</span></div>
+      </div>
+      <button class="btn-swap" id="btn-do-swap" onclick="doSwap()">⚡ SWAP AHORA</button>
+    </div>
+    <div class="swap-history">
+      <div class="swap-history-title">HISTORIAL</div>
+      <div id="swap-history-list"><div class="swap-history-empty">Sin swaps todavía 👀</div></div>
+    </div>
+    <div style="height:12px"></div>
+  </div>
+
+</div><!-- /main-app -->
+
+<!-- NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="nav-staking" onclick="switchTab('staking')">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 21L5.71 22l1-2.3A4.49 4.49 0 0 0 8 20C19 20 22 3 22 3c-1 2-8 2-8 2 1-3 6-3.5 6-3.5C18 2 17 8 17 8z"/></svg>
+    STAKE
+  </button>
+  <button class="nav-btn" id="nav-misiones" onclick="switchTab('misiones')">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.35C18 2.51 16.49 1 14.65 1c-1.11 0-2.05.56-2.67 1.41L12 3.25l-.98-1.34C10.4 1.56 9.46 1 8.35 1 6.51 1 5 2.51 5 4.35c0 .47.11.91.18 1.35H3c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-5.35-3c.74 0 1.35.61 1.35 1.35 0 .75-.61 1.35-1.35 1.35H13V4.35C13 3.61 13.61 3 14.65 3zM7 4.35C7 3.61 7.61 3 8.35 3S9.7 3.61 9.7 4.35V5.7H8.35C7.61 5.7 7 5.09 7 4.35zM11 19H3V8h8v11zm10 0h-8V8h8v11z"/></svg>
+    MISIONES
+  </button>
+  <button class="nav-btn" id="nav-swap" onclick="switchTab('swap')">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+    SWAP
+  </button>
+  <button class="nav-btn" id="nav-membresia" onclick="switchTab('membresia')">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93C9.33 17.79 7 14.5 7 11V7.18L12 5z"/></svg>
+    VIP
+  </button>
+</nav>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3 id="modal-title">STAKE BRZL</h3>
+    <input class="modal-input" id="modal-input" type="number" placeholder="0.00" min="0" step="any"/>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">CANCELAR</button>
+      <button class="modal-confirm" onclick="confirmModal()">CONFIRMAR</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<script type="module">
+  // Importar MiniKit desde CDN oficial de jsdelivr
+  import { MiniKit } from 'https://cdn.jsdelivr.net/npm/@worldcoin/minikit-js/+esm';
+
+  // Instalar MiniKit INMEDIATAMENTE al cargar
+  MiniKit.install('app_84eee44c72df762eb376383212feb160');
+  window._MiniKit = MiniKit;
+  console.log('MiniKit installed, isInstalled:', MiniKit.isInstalled());
+</script>
+<script>
+
+  // ═══════════════════════════════════════════
+  //  CONFIG — World Chain
+  // ═══════════════════════════════════════════
+  const STAKING_ADDR = '0xFC5c114C3A259b0CeBeDca42BED4c8317ec89320';
+  const BRZL_ADDR    = '0xD021eE02CD3854A5D1e82cBeBdF277ce0DC96dA4';
+  const WLD_ADDR     = '0x2cFc85d8E48F8EAB294be644d9E25C3030863003';
+  const WORLD_CHAIN_ID = 480;
+  const WORLD_RPC    = 'https://worldchain-mainnet.g.alchemy.com/public';
+
+  const STAKING_ABI = [
+    'function stake(uint256 amount) external',
+    'function unstake(uint256 amount) external',
+    'function unstakeAll() external',
+    'function claimRewards() external',
+    'function unstakeAndClaim() external',
+    'function buyMembership(uint8 tierIndex) external',
+    'function getUserInfo(address) external view returns (uint256,uint256,uint8,bool,string,uint256,uint256)',
+    'function timeUntilUnlock(address) external view returns (uint256)',
+    'function rewardPool() external view returns (uint256)',
+    'function totalStaked() external view returns (uint256)',
+    'function tiers(uint8) external view returns (string,uint256,uint256)'
+  ];
+
+  const ERC20_ABI = [
+    'function balanceOf(address) external view returns (uint256)',
+    'function approve(address spender, uint256 amount) external returns (bool)',
+    'function allowance(address owner, address spender) external view returns (uint256)'
+  ];
+
+  // ═══════════════════════════════════════════
+  //  WEB3 STATE
+  // ═══════════════════════════════════════════
+  let provider, signer, walletAddr;
+  let stakingContract, brzlContract, wldContract;
+  let web3Connected = false;
+
+  const TG_LINK = 'https://t.me/BarzolaLegacy28';
+  const X_LINK  = 'https://x.com/barzolalegacy1';
+  const R_PERM  = 5;
+  const R_DAILY = 2;
+
+  // ═══════════════════════════════════════════
+  //  DETECTAR ENTORNO
+  // ═══════════════════════════════════════════
+  function isWorldApp() {
+    return typeof window.MiniKit !== 'undefined' ||
+           navigator.userAgent.includes('WorldApp') ||
+           (window.ethereum && window.ethereum.isWorldApp);
+  }
+
+  // ═══════════════════════════════════════════
+  //  CONECTAR WALLET — World App + Browser
+  // ═══════════════════════════════════════════
+  async function connectWallet() {
+    showToast('🔗 Conectando...');
+    try {
+      const eth = window.ethereum;
+      if (eth) {
+        provider  = new ethers.BrowserProvider(eth);
+        await provider.send('eth_requestAccounts', []);
+        signer    = await provider.getSigner();
+        walletAddr= await signer.getAddress();
+        stakingContract = new ethers.Contract(STAKING_ADDR, STAKING_ABI, signer);
+        brzlContract    = new ethers.Contract(BRZL_ADDR, ERC20_ABI, signer);
+        wldContract     = new ethers.Contract(WLD_ADDR, ERC20_ABI, signer);
+        finishConnect();
+        return;
+      }
+      showToast('⚠️ No se detectó wallet');
+    } catch(e) {
+      console.error(e);
+      showToast('❌ ' + (e.message||'Error').slice(0,40));
+    }
+  }
+
+  function finishConnect() {
+    web3Connected = true;
+    const short = walletAddr ? walletAddr.slice(0,6)+'...'+walletAddr.slice(-4) : '??';
+    // Ocultar splash y mostrar app
+    document.getElementById('splash').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    document.getElementById('connect-btn').style.display = 'none';
+    document.getElementById('wallet-display').textContent = '🟢 ' + short;
+    document.getElementById('wallet-display').style.display = 'block';
+    showToast('✅ Conectado: ' + short);
+    loadChainData();
+    loadMissionStatus();
+    checkMigrationBanner();
+  }
+
+  // Banner de aviso de cambio de contrato (visible 7 dias)
+  const MIGRATION_END_DATE = new Date('2026-05-24').getTime(); // 7 dias desde hoy
+
+  function checkMigrationBanner() {
+    const now = Date.now();
+    const dismissed = localStorage.getItem('migration_dismissed');
+    if (now < MIGRATION_END_DATE && !dismissed) {
+      document.getElementById('migration-banner').style.display = 'block';
+    }
+  }
+
+  function closeMigrationBanner() {
+    localStorage.setItem('migration_dismissed', '1');
+    document.getElementById('migration-banner').style.display = 'none';
+  }
+
+  // Esperar MiniKit hasta 5 segundos
+  function waitForMiniKit() {
+    return new Promise(resolve => {
+      const mk = window._MiniKit || window.MiniKit;
+      if (mk && mk.isInstalled()) { resolve(mk); return; }
+      const t = Date.now();
+      const id = setInterval(() => {
+        const m = window._MiniKit || window.MiniKit;
+        if (m && m.isInstalled()) { clearInterval(id); resolve(m); }
+        else if (Date.now()-t > 5000) { clearInterval(id); resolve(null); }
+      }, 200);
+    });
+  }
+
+  async function splashConnect() {
+    const btn  = document.querySelector('#splash button');
+    const stat = document.getElementById('splash-status');
+    btn.textContent = '⏳ Detectando...';
+    btn.disabled = true;
+    stat.textContent = '';
+
+    try {
+      // 1. Esperar MiniKit activamente
+      const mk = await waitForMiniKit();
+
+      if (mk) {
+        stat.textContent = '✓ World App OK';
+        try { mk.install('app_84eee44c72df762eb376383212feb160'); } catch(e){}
+
+        const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const nonce=Array.from({length:16},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+
+        btn.textContent = 'Abriendo wallet...';
+        // API nueva: MiniKit.walletAuth() directo (commandsAsync fue removido)
+        // walletAuth nueva API - sin expirationTime
+        const result = await mk.walletAuth({
+          nonce,
+          statement: 'Bienvenido a Barzola Legacy Staking',
+        });
+
+        // Respuesta puede venir como finalPayload o data
+        const payload = result?.finalPayload || result?.data || result;
+
+        if (payload?.status === 'success' || payload?.address) {
+          walletAddr = payload.address || mk.walletAddress;
+          const rpc  = new ethers.JsonRpcProvider(WORLD_RPC);
+          stakingContract = new ethers.Contract(STAKING_ADDR, STAKING_ABI, rpc);
+          brzlContract    = new ethers.Contract(BRZL_ADDR, ERC20_ABI, rpc);
+          wldContract     = new ethers.Contract(WLD_ADDR, ERC20_ABI, rpc);
+          window._useMiniKit = true;
+          finishConnect();
+          return;
+        }
+        stat.textContent = 'Cancelado - toca de nuevo';
+
+      } else if (window.ethereum) {
+        // 2. Fallback ethereum provider
+        stat.textContent = 'Conectando via ethereum...';
+        provider  = new ethers.BrowserProvider(window.ethereum);
+        await provider.send('eth_requestAccounts',[]);
+        signer    = await provider.getSigner();
+        walletAddr= await signer.getAddress();
+        stakingContract = new ethers.Contract(STAKING_ADDR, STAKING_ABI, signer);
+        brzlContract    = new ethers.Contract(BRZL_ADDR, ERC20_ABI, signer);
+        wldContract     = new ethers.Contract(WLD_ADDR, ERC20_ABI, signer);
+        finishConnect();
+        return;
+
+      } else {
+        stat.textContent = '⚠️ Abrí desde la World App';
+      }
+
+    } catch(e) {
+      console.error(e);
+      stat.textContent = '❌ '+String(e.message||e).slice(0,50);
+    }
+
+    btn.textContent = '🔗 CONECTAR WALLET';
+    btn.disabled = false;
+  }
+
+  // ═══════════════════════════════════════════
+  //  LEER DATOS DEL BLOCKCHAIN
+  // ═══════════════════════════════════════════
+  // Variables para el contador en tiempo real
+  let _stakedAmount = 0;
+  let _apyBps = 0;
+  let _baseRewards = 0;
+  let _lastUpdate = 0;
+  let _realtimeTimer = null;
+
+  async function loadChainData() {
+    if (!web3Connected) return;
+    try {
+      const [brzlBal, wldBal, info] = await Promise.all([
+        brzlContract.balanceOf(walletAddr),
+        wldContract.balanceOf(walletAddr),
+        stakingContract.getUserInfo(walletAddr)
+      ]);
+
+      const brzlFmt = parseFloat(ethers.formatEther(brzlBal)).toFixed(2);
+      const wldFmt  = parseFloat(ethers.formatEther(wldBal)).toFixed(2);
+
+      document.getElementById('brzl-balance').textContent = brzlFmt;
+      document.getElementById('wld-balance').textContent  = wldFmt;
+
+      // info: [staked, rewards, tier, hasMem, tierName, apyBps, secondsUnlock]
+      const staked  = parseFloat(ethers.formatEther(info[0]));
+      const rewards = parseFloat(ethers.formatEther(info[1]));
+      const hasMem  = info[3];
+      const tierName= info[4];
+      const apyBps  = Number(info[5]);
+      const secsLeft= Number(info[6]);
+
+      document.getElementById('staked-amount').textContent = staked.toFixed(4);
+
+      // Guardar datos para el contador en tiempo real
+      _stakedAmount = staked;
+      _apyBps       = apyBps;
+      _baseRewards  = rewards;
+      _lastUpdate   = Date.now();
+
+      // Iniciar contador en tiempo real si hay stake
+      if (staked > 0) startRealtimeCounter();
+
+      if (secsLeft > 0) {
+        document.getElementById('timer-display').textContent =
+          '🔒 Retiro en: ' + fmtSeconds(secsLeft);
+      } else if (staked > 0) {
+        document.getElementById('timer-display').textContent = '✅ Podés retirar!';
+      } else {
+        document.getElementById('timer-display').textContent = 'Sin staking activo';
+        document.getElementById('interests-display').textContent = '0.00000000';
+      }
+
+      // Membresía
+      const memText = hasMem ? tierName + ' APY ' + (apyBps/100) + '%' : 'Sin membresía';
+      document.getElementById('staking-mem-badge').textContent = hasMem ? '💎 ' + memText : '⚠️ ' + memText;
+      document.getElementById('mem-tab-badge').textContent = hasMem ? '💎 ' + memText : '⚠️ Sin membresía';
+
+    } catch(e) {
+      console.error('loadChainData error:', e);
+    }
+  }
+
+  function startRealtimeCounter() {
+    // Cancelar timer anterior si existe
+    if (_realtimeTimer) clearInterval(_realtimeTimer);
+
+    _realtimeTimer = setInterval(() => {
+      if (!web3Connected || _stakedAmount <= 0) return;
+
+      // Calcular intereses acumulados desde el último update
+      const elapsed = (Date.now() - _lastUpdate) / 1000; // segundos
+      const perSecond = (_stakedAmount * _apyBps) / (10000 * 365 * 24 * 3600);
+      const accumulated = _baseRewards + (perSecond * elapsed);
+
+      document.getElementById('interests-display').textContent = accumulated.toFixed(8);
+    }, 100); // actualizar cada 100ms = muy fluido
+  }
+
+  function fmtSeconds(s) {
+    const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
+    return `${h}h ${m}m ${sec}s`;
+  }
+
+  // Recargar cada 15 segundos
+  setInterval(()=>{ if(web3Connected) loadChainData(); }, 15000);
+
+  // ═══════════════════════════════════════════
+  //  STAKING FUNCTIONS — BLOCKCHAIN REAL
+  // ═══════════════════════════════════════════
+  async function doStake(amount) {
+    const amtWei = ethers.parseEther(amount.toString());
+    try {
+      showToast('⏳ Aprobando BRZL...');
+      const allowance = await brzlContract.allowance(walletAddr, STAKING_ADDR);
+      if (allowance < amtWei) {
+        const approveTx = await brzlContract.approve(STAKING_ADDR, amtWei);
+        showToast('⏳ Esperando aprobación...');
+        await approveTx.wait();
+      }
+      showToast('⏳ Stakeando...');
+      const tx = await stakingContract.stake(amtWei);
+      await tx.wait();
+      showToast(`✅ Stakeaste ${amount} BRZL! 🚀`);
+      spawnCoins();
+      await loadChainData();
+    } catch(e) {
+      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
+    }
+  }
+
+  async function doUnstake(amount) {
+    try {
+      showToast('⏳ Retirando...');
+      const tx = await stakingContract.unstake(ethers.parseEther(amount.toString()));
+      await tx.wait();
+      showToast(`✅ Retiraste ${amount} BRZL!`);
+      spawnCoins();
+      await loadChainData();
+    } catch(e) {
+      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
+    }
+  }
+
+  async function doClaimRewards() {
+    try {
+      showToast('⏳ Reclamando intereses...');
+      const tx = await stakingContract.claimRewards();
+      await tx.wait();
+      showToast('✅ Intereses reclamados! 💰');
+      spawnCoins();
+      await loadChainData();
+    } catch(e) {
+      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
+    }
+  }
+
+  async function doBuyMembership(tierIndex, wldCost) {
+    const amtWei = ethers.parseEther(wldCost.toString());
+    try {
+      showToast('⏳ Aprobando WLD...');
+      const allowance = await wldContract.allowance(walletAddr, STAKING_ADDR);
+      if (allowance < amtWei) {
+        const approveTx = await wldContract.approve(STAKING_ADDR, amtWei);
+        await approveTx.wait();
+      }
+      showToast('⏳ Comprando membresía...');
+      const tx = await stakingContract.buyMembership(tierIndex);
+      await tx.wait();
+      showToast('🎉 ¡Membresía activada!');
+      spawnCoins();
+      await loadChainData();
+    } catch(e) {
+      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  //  UI STATE (misiones — local)
+  // ═══════════════════════════════════════════
+  let state = {
+    modalMode:'stake', totalEarned:0,
+    missions:{
+      tg:{done:false,claimedAt:null}, x:{done:false,claimedAt:null},
+      checkin:{done:false,claimedAt:null}, share:{done:false,claimedAt:null},
+      'stake-daily':{done:false,claimedAt:null}
+    }
+  };
+
+  try {
+    const s = JSON.parse(localStorage.getItem('brzl_v2')||'{}');
+    if(s.totalEarned!=null) state.totalEarned=s.totalEarned;
+    if(s.missions) Object.keys(s.missions).forEach(k=>{ if(state.missions[k]) state.missions[k]=s.missions[k]; });
+  } catch(e){}
+
+  function save() {
+    localStorage.setItem('brzl_v2', JSON.stringify({
+      totalEarned:state.totalEarned, missions:state.missions
+    }));
+  }
+
+  function isSameDay(ts) {
+    if(!ts) return false;
+    const a=new Date(ts),b=new Date();
+    return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();
+  }
+
+  function msToMidnight() { const n=new Date(),m=new Date(n); m.setHours(24,0,0,0); return m-n; }
+
+  function fmtCountdown(ms) {
+    const s=Math.floor(ms/1000);
+    return `⏳ ${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m ${s%60}s`;
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
+    document.getElementById('tab-'+tab).classList.add('active');
+    const nb=document.getElementById('nav-'+tab); if(nb) nb.classList.add('active');
+    if(tab==='misiones') loadMissionStatus();
+    if(tab==='swap') renderSwapHistory();
+    if(web3Connected) loadChainData();
+  }
+
+  function updateUI() {
+    if (!web3Connected) {
+      document.getElementById('staked-amount').textContent = '0.0000';
+      document.getElementById('interests-display').textContent = '0.00000000';
+      document.getElementById('timer-display').textContent = 'Conectá tu wallet';
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  //  MODAL — ahora llama blockchain
+  // ═══════════════════════════════════════════
+  function openModal(mode){
+    if (!web3Connected) { showToast('⚠️ Conectá tu wallet primero'); connectWallet(); return; }
+    state.modalMode=mode;
+    const t={'stake':'📈 STAKE BRZL','withdraw-balance':'💸 RETIRAR BALANCE','withdraw-interests':'💰 RETIRAR INTERESES'};
+    document.getElementById('modal-title').textContent=t[mode];
+    document.getElementById('modal-input').value='';
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+  function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+
+  async function confirmModal(){
+    const val=parseFloat(document.getElementById('modal-input').value);
+    if(isNaN(val)||val<=0){showToast('⚠️ Ingresá un monto válido');return;}
+    closeModal();
+    if(state.modalMode==='stake') await doStake(val);
+    else if(state.modalMode==='withdraw-balance') await doUnstake(val);
+    else if(state.modalMode==='withdraw-interests') await doClaimRewards();
+  }
+
+  // ═══════════════════════════════════════════
+  //  MEMBRESÍA — llama blockchain
+  // ═══════════════════════════════════════════
+  async function buyMembership(name, apy, wld) {
+    if (!web3Connected) { showToast('⚠️ Conectá tu wallet primero'); connectWallet(); return; }
+    const tierMap = {Bronze:0, Silver:1, Gold:2, Platinum:3, Diamond:4};
+    await doBuyMembership(tierMap[name], wld);
+  }
+
+  // ═══════════════════════════════════════════
+  //  MISIONES (local)
+  // ═══════════════════════════════════════════
+  // Estado de misiones del blockchain
+  let _missionStatus = null;
+  let _missionCountdown = null;
+  let _totalMissionEarned = 0;
+
+  async function loadMissionStatus() {
+    if (!web3Connected) return;
+    try {
+      const status = await stakingContract.getMissionStatus(walletAddr);
+      // status: [canDailyCheckIn, canShareApp, canStakingMission, telegramClaimed, twitterClaimed, nextDailyIn]
+      _missionStatus = {
+        canCheckin:   status[0],
+        canShare:     status[1],
+        canStaking:   status[2],
+        tgClaimed:    status[3],
+        xClaimed:     status[4],
+        nextDailyIn:  Number(status[5])
+      };
+
+      // Calcular total ganado estimado
+      const tgEarned   = _missionStatus.tgClaimed ? 5 : 0;
+      const xEarned    = _missionStatus.xClaimed  ? 5 : 0;
+      _totalMissionEarned = tgEarned + xEarned;
+
+      renderMissions();
+      startMissionCountdown();
+    } catch(e) {
+      console.error('loadMissionStatus error:', e);
+    }
+  }
+
+  function startMissionCountdown() {
+    if (_missionCountdown) clearInterval(_missionCountdown);
+    _missionCountdown = setInterval(() => {
+      if (!_missionStatus) return;
+      if (_missionStatus.nextDailyIn > 0) {
+        _missionStatus.nextDailyIn--;
+        // Actualizar countdowns
+        const fmt = fmtSeconds(_missionStatus.nextDailyIn);
+        ['checkin','share'].forEach(id => {
+          const el = document.getElementById('cooldown-' + id);
+          if (el && !_missionStatus.canCheckin) el.textContent = '⏰ ' + fmt;
+        });
+        // Si llega a 0 recargar
+        if (_missionStatus.nextDailyIn === 0) loadMissionStatus();
+      }
+    }, 1000);
+  }
+
+  function renderMissions() {
+    // Contador total ganado en misiones
+    document.getElementById('total-earned').textContent = _totalMissionEarned + ' BRZL';
+
+    if (!_missionStatus) return;
+
+    // ── TELEGRAM (permanente - una vez en la vida) ──
+    const btnTg   = document.getElementById('btn-tg');
+    const cardTg  = document.getElementById('card-tg');
+    if (_missionStatus.tgClaimed) {
+      btnTg.className = 'btn-done'; btnTg.textContent = '✓ HECHO'; btnTg.disabled = true;
+      cardTg.classList.add('done');
+    } else {
+      btnTg.className = 'btn-go'; btnTg.textContent = 'IR →'; btnTg.disabled = false;
+      cardTg.classList.remove('done');
+    }
+
+    // ── TWITTER/X (permanente - una vez en la vida) ──
+    const btnX   = document.getElementById('btn-x');
+    const cardX  = document.getElementById('card-x');
+    if (_missionStatus.xClaimed) {
+      btnX.className = 'btn-done'; btnX.textContent = '✓ HECHO'; btnX.disabled = true;
+      cardX.classList.add('done');
+    } else {
+      btnX.className = 'btn-go'; btnX.textContent = 'IR →'; btnX.disabled = false;
+      cardX.classList.remove('done');
+    }
+
+    // ── CHECK-IN DIARIO ──
+    const btnCI   = document.getElementById('btn-checkin');
+    const cardCI  = document.getElementById('card-checkin');
+    const coolCI  = document.getElementById('cooldown-checkin');
+    if (!_missionStatus.canCheckin) {
+      btnCI.className = 'btn-done'; btnCI.textContent = '✓ OK'; btnCI.disabled = true;
+      cardCI.classList.add('done');
+      if (coolCI) coolCI.textContent = '⏰ ' + fmtSeconds(_missionStatus.nextDailyIn);
+    } else {
+      btnCI.className = 'btn-claim'; btnCI.textContent = 'CLAIM'; btnCI.disabled = false;
+      cardCI.classList.remove('done');
+      if (coolCI) coolCI.textContent = '';
+    }
+
+    // ── COMPARTIR (diaria) ──
+    const btnSh   = document.getElementById('btn-share');
+    const cardSh  = document.getElementById('card-share');
+    const coolSh  = document.getElementById('cooldown-share');
+    if (!_missionStatus.canShare) {
+      btnSh.className = 'btn-done'; btnSh.textContent = '✓ OK'; btnSh.disabled = true;
+      cardSh.classList.add('done');
+      if (coolSh) coolSh.textContent = '⏰ ' + fmtSeconds(_missionStatus.nextDailyIn);
+    } else {
+      btnSh.className = 'btn-go'; btnSh.textContent = 'IR →'; btnSh.disabled = false;
+      cardSh.classList.remove('done');
+      if (coolSh) coolSh.textContent = '';
+    }
+
+    // ── STAKE DIARIO ──
+    const btnSt   = document.getElementById('btn-stake-daily');
+    const cardSt  = document.getElementById('card-stake-daily');
+    const coolSt  = document.getElementById('cooldown-stake-daily');
+    if (!_missionStatus.canStaking) {
+      if(btnSt){ btnSt.className = 'btn-done'; btnSt.textContent = '✓ OK'; btnSt.disabled = true; }
+      if(cardSt) cardSt.classList.add('done');
+      if (coolSt) coolSt.textContent = '⏰ ' + fmtSeconds(_missionStatus.nextDailyIn);
+    } else {
+      if(btnSt){ btnSt.className = 'btn-go'; btnSt.textContent = 'IR →'; btnSt.disabled = false; }
+      if(cardSt) cardSt.classList.remove('done');
+      if (coolSt) coolSt.textContent = '';
+    }
+  }
+
+  function renderPerm(id) {} // Legacy - ya no se usa
+  function renderDaily(id) {} // Legacy - ya no se usa
+
+  async function doMission(id) {
+    if (!web3Connected) { showToast('Conecta tu wallet primero'); return; }
+    const mk = window.MiniKit || window._MiniKit;
+    if (!mk) { showToast('MiniKit no disponible'); return; }
+
+    // ABIs de las funciones de misiones
+    const CHECK_IN_ABI   = [{"inputs":[],"name":"claimDailyCheckIn","outputs":[],"type":"function"}];
+    const SOCIAL_ABI     = [{"inputs":[{"name":"missionType","type":"uint8"}],"name":"claimSocialMission","outputs":[],"type":"function"}];
+    const DAILY_ABI      = [{"inputs":[{"name":"missionType","type":"uint8"}],"name":"claimDailyMission","outputs":[],"type":"function"}];
+
+    try {
+      if (id === 'tg') {
+        // Abrir Telegram y reclamar misión social tipo 0
+        window.open(TG_LINK, '_blank');
+        showToast('Abriendo Telegram...');
+        await new Promise(r => setTimeout(r, 2000));
+        showToast('Reclamando +5 BRZL...');
+        const sel = ethers.id('claimSocialMission(uint8)').slice(0,10);
+        const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[0]).slice(2);
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data }] });
+        const payload = res?.finalPayload || res?.data || res;
+        if (payload?.status !== 'error') {
+          spawnCoins();
+          showToast('🎉 +5 BRZL por Telegram!');
+          setTimeout(() => { loadChainData(); loadMissionStatus(); }, 3000);
+        } else {
+          showToast('Error: ' + (payload?.error_code || 'ya reclamado').slice(0,30));
+        }
+        return;
+      }
+
+      if (id === 'x') {
+        window.open(X_LINK, '_blank');
+        showToast('Abriendo Twitter/X...');
+        await new Promise(r => setTimeout(r, 2000));
+        showToast('Reclamando +5 BRZL...');
+        const sel = ethers.id('claimSocialMission(uint8)').slice(0,10);
+        const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[1]).slice(2);
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data }] });
+        const payload = res?.finalPayload || res?.data || res;
+        if (payload?.status !== 'error') {
+          spawnCoins();
+          showToast('🎉 +5 BRZL por Twitter/X!');
+          setTimeout(() => { loadChainData(); loadMissionStatus(); }, 3000);
+        } else {
+          showToast('Error: ' + (payload?.error_code || 'ya reclamado').slice(0,30));
+        }
+        return;
+      }
+
+      if (id === 'checkin') {
+        showToast('Reclamando check-in...');
+        const sel = ethers.id('claimDailyCheckIn()').slice(0,10);
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data: sel }] });
+        const payload = res?.finalPayload || res?.data || res;
+        if (payload?.status !== 'error') {
+          spawnCoins();
+          showToast('🎉 +2 BRZL check-in diario!');
+          setTimeout(() => { loadChainData(); loadMissionStatus(); }, 3000);
+        } else {
+          showToast('Ya reclamaste hoy o pool vacio');
+        }
+        return;
+      }
+
+      if (id === 'share') {
+        const txt = '🔨 Estoy ganando BRZL en Barzola Legacy! Vos también 🚀 ';
+        if (navigator.share) navigator.share({ title: 'Barzola Legacy', text: txt, url: TG_LINK });
+        else { navigator.clipboard?.writeText(txt + TG_LINK); showToast('📋 Copiado!'); }
+        await new Promise(r => setTimeout(r, 1500));
+        showToast('Reclamando +2 BRZL...');
+        const sel = ethers.id('claimDailyMission(uint8)').slice(0,10);
+        const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[2]).slice(2);
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data }] });
+        const payload = res?.finalPayload || res?.data || res;
+        if (payload?.status !== 'error') {
+          spawnCoins();
+          showToast('🎉 +2 BRZL por compartir!');
+          setTimeout(() => { loadChainData(); loadMissionStatus(); }, 3000);
+        } else {
+          showToast('Ya compartiste hoy');
+        }
+        return;
+      }
+
+    } catch(e) {
+      console.error(e);
+      showToast('Error: ' + (e.message||'').slice(0,40));
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  //  TOAST & COINS
+  // ═══════════════════════════════════════════
+  function showToast(msg){
+    const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),3200);
+  }
+
+  function spawnCoins(){
+    ['🪙','💰','✨','🚀'].forEach((e,i)=>{
+      setTimeout(()=>{
+        const el=document.createElement('div');el.className='coin-float';el.textContent=e;
+        el.style.left=(Math.random()*80+10)+'%';el.style.top=(Math.random()*40+30)+'%';
+        document.body.appendChild(el);setTimeout(()=>el.remove(),1300);
+      },i*150);
+    });
+  }
+
+  // ═══════════════════════════════════════════
+  //  SWAP (simulado — necesita DEX en World Chain)
+  // ═══════════════════════════════════════════
+  const RATES = { 'BRZL_WLD': 0.0000630, 'WLD_BRZL': 15873 };
+  const FEE = 0.003;
+  let swapFrom='BRZL', swapTo='WLD';
+  let swapHistory=[];
+  try { swapHistory=JSON.parse(localStorage.getItem('brzl_swap_hist')||'[]'); } catch(e){}
+  function saveSwapHist(){ localStorage.setItem('brzl_swap_hist',JSON.stringify(swapHistory.slice(0,20))); }
+
+  function setPair(from,to){
+    swapFrom=from; swapTo=to;
+    document.getElementById('from-token').textContent=from==='BRZL'?'🪙 BRZL':'💎 WLD';
+    document.getElementById('to-token').textContent=to==='WLD'?'💎 WLD':'🪙 BRZL';
+    document.getElementById('pair-brzl-wld').classList.toggle('active',from==='BRZL');
+    document.getElementById('pair-wld-brzl').classList.toggle('active',from==='WLD');
+    const rate = RATES[from+'_'+to]; document.getElementById('swap-rate-txt').textContent=`Cargando precio...`;
+    // Cargar precio real del par
+    getRealRate().then(rates => {
+      const r = from === 'BRZL' ? rates.brzlToWld : rates.wldToBrzl;
+      document.getElementById('swap-rate-txt').textContent = `1 ${from} = ${r.toFixed(8)} ${to}`;
+    }).catch(()=>{
+      document.getElementById('swap-rate-txt').textContent = `1 ${from} = ${rate} ${to}`;
+    });
+    document.getElementById('swap-from-input').value='';
+    document.getElementById('swap-to-output').textContent='0.00';
+    // Mostrar balance disponible
+    const balEl = document.getElementById(from==='BRZL' ? 'brzl-balance' : 'wld-balance');
+    if (balEl) { const a = document.getElementById('swap-avail-bal'); if(a) a.textContent = balEl.textContent; }
+  }
+
+  function flipPair(){ setPair(swapTo,swapFrom); }
+
+  // Pool BRZL/WLD Uniswap V2
+  const POOL_V2_ADDR = '0x75291F9bE967A7534d9921e79C083f0dD83394F6';
+
+  async function getRealRate() {
+    try {
+      // Uniswap V2: getReserves() y token0/token1
+      const pairABI = [
+        {"inputs":[],"name":"getReserves","outputs":[{"name":"reserve0","type":"uint112"},{"name":"reserve1","type":"uint112"},{"name":"blockTimestampLast","type":"uint32"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"token0","outputs":[{"name":"","type":"address"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"token1","outputs":[{"name":"","type":"address"}],"stateMutability":"view","type":"function"}
+      ];
+      const rpc = new ethers.JsonRpcProvider(WORLD_RPC);
+      const pair = new ethers.Contract(POOL_V2_ADDR, pairABI, rpc);
+      const [reserves, token0] = await Promise.all([pair.getReserves(), pair.token0()]);
+      const reserve0 = Number(ethers.formatEther(reserves[0]));
+      const reserve1 = Number(ethers.formatEther(reserves[1]));
+      // Determinar cuál es BRZL y cuál es WLD
+      const brzlIsToken0 = token0.toLowerCase() === BRZL_ADDR.toLowerCase();
+      const brzlReserve = brzlIsToken0 ? reserve0 : reserve1;
+      const wldReserve  = brzlIsToken0 ? reserve1 : reserve0;
+      const brzlToWld = wldReserve / brzlReserve;
+      const wldToBrzl = brzlReserve / wldReserve;
+      console.log('Precio real BRZL→WLD:', brzlToWld);
+      return { brzlToWld, wldToBrzl };
+    } catch(e) {
+      console.log('Precio fallback:', e.message);
+      return { brzlToWld: 0.0000630, wldToBrzl: 15873 };
+    }
+  }
+
+  async function calcSwapOutput(){
+    const val = parseFloat(document.getElementById('swap-from-input').value)||0;
+    if(val <= 0) { document.getElementById('swap-to-output').textContent='0.00'; return; }
+    try {
+      const rates = await getRealRate();
+      const rate = swapFrom === 'BRZL' ? rates.brzlToWld : rates.wldToBrzl;
+      const out = val * rate * (1-FEE);
+      document.getElementById('swap-to-output').textContent = out > 0 ? out.toFixed(8) : '0.00';
+      // Actualizar tasa mostrada
+      const rateEl = document.getElementById('swap-rate-txt');
+      if(rateEl) rateEl.textContent = `1 ${swapFrom} = ${rate.toFixed(8)} ${swapTo}`;
+    } catch(e) {
+      const out = val * (RATES[swapFrom+'_'+swapTo]||0) * (1-FEE);
+      document.getElementById('swap-to-output').textContent = out > 0 ? out.toFixed(8) : '0.00';
+    }
+  }
+
+  function setMax(){
+    // Usar balance real segun el par seleccionado
+    const bal = document.getElementById(swapFrom==='BRZL' ? 'brzl-balance' : 'wld-balance').textContent;
+    const num = parseFloat(bal.replace(/,/g,'')) || 0;
+    document.getElementById('swap-from-input').value = num.toFixed(4);
+    calcSwapOutput();
+  }
+
+  // Uniswap V3 SwapRouter02 en World Chain
+  const SWAP_ROUTER_ADDR = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+  const PERMIT2_ADDR     = '0x000000000022D473030F116dDEE9F6B43aC78BA3';
+
+  // ABI Permit2 approve (Allowance Transfer)
+  const PERMIT2_APPROVE_ABI = [{
+    name: 'approve',
+    type: 'function',
+    inputs: [
+      { name: 'token',      type: 'address' },
+      { name: 'spender',    type: 'address' },
+      { name: 'amount',     type: 'uint160' },
+      { name: 'expiration', type: 'uint48'  }
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable'
+  }];
+  const POOL_FEE = 3000; // 0.3%
+
+  async function doSwap(){
+    if(!web3Connected){ showToast('Conecta tu wallet primero'); return; }
+    const val = parseFloat(document.getElementById('swap-from-input').value)||0;
+    if(val<=0){ showToast('Ingresa un monto'); return; }
+
+    const mk = window.MiniKit || window._MiniKit;
+    if(!mk){ showToast('MiniKit no disponible'); return; }
+
+    const amtWei  = ethers.parseEther(val.toString());
+    const tokenIn = swapFrom === 'BRZL' ? BRZL_ADDR : WLD_ADDR;
+
+    try {
+      showToast('Calculando precio...');
+
+      // Leer reserves del par V2
+      const pairABI = [
+        {"inputs":[],"name":"getReserves","outputs":[{"name":"r0","type":"uint112"},{"name":"r1","type":"uint112"},{"name":"ts","type":"uint32"}],"stateMutability":"view","type":"function"},
+        {"inputs":[],"name":"token0","outputs":[{"name":"","type":"address"}],"stateMutability":"view","type":"function"}
+      ];
+      const rpc  = new ethers.JsonRpcProvider(WORLD_RPC);
+      const pair = new ethers.Contract(POOL_V2_ADDR, pairABI, rpc);
+      const [reserves, token0] = await Promise.all([pair.getReserves(), pair.token0()]);
+      const brzlIsToken0 = token0.toLowerCase() === BRZL_ADDR.toLowerCase();
+      const [resIn, resOut] = swapFrom === 'BRZL'
+        ? (brzlIsToken0 ? [reserves.r0, reserves.r1] : [reserves.r1, reserves.r0])
+        : (brzlIsToken0 ? [reserves.r1, reserves.r0] : [reserves.r0, reserves.r1]);
+
+      // Calcular amountOut con fee 0.3%
+      const amtInFee  = amtWei * 997n;
+      const amountOut = (amtInFee * resOut) / (resIn * 1000n + amtInFee);
+      const minOut    = amountOut * 95n / 100n; // 5% slippage
+
+      showToast('Preparando swap...');
+
+      // Permit2 approve tokenIn al contrato de staking
+      const permit2Data = await encodeTx(
+        'approve(address,address,uint160,uint48)',
+        tokenIn, STAKING_ADDR, amtWei, 0
+      );
+
+      // Llamar swapBRZLforWLD o swapWLDforBRZL en el contrato de staking
+      const abiCoder = ethers.AbiCoder.defaultAbiCoder();
+      let swapSel, swapData;
+
+      if (swapFrom === 'BRZL') {
+        swapSel  = ethers.id('swapBRZLforWLD(uint256,uint256)').slice(0,10);
+      } else {
+        swapSel  = ethers.id('swapWLDforBRZL(uint256,uint256)').slice(0,10);
+      }
+      swapData = swapSel + abiCoder.encode(
+        ['uint256','uint256'], [amtWei, minOut]
+      ).slice(2);
+
+      const transactions = [
+        { to: PERMIT2_ADDR, data: permit2Data },
+        { to: STAKING_ADDR, data: swapData    }
+      ];
+
+      showToast('Esperando confirmacion...');
+      const res = await mk.sendTransaction({ chainId: 480, transactions });
+      const payload = res?.finalPayload || res?.data || res;
+
+      if(payload?.status !== 'error' && !payload?.error_code){
+        const outFmt = parseFloat(ethers.formatEther(amountOut)).toFixed(6);
+        showToast('Swap OK! ~' + outFmt + ' ' + swapTo);
+        spawnCoins();
+        setTimeout(()=>loadChainData(), 4000);
+      } else {
+        showToast('Error: ' + (payload?.error_code || payload?.message || '').slice(0,40));
+      }
+    } catch(e) {
+      console.error(e);
+      showToast('Error: ' + (e.message||'').slice(0,50));
+    }
+  }
+
+  function renderSwapHistory(){
+    const el=document.getElementById('swap-history-list');
+    if(!el) return;
+    if(!swapHistory.length){el.innerHTML='<div class="swap-history-empty">Sin swaps todavía 👀</div>';return;}
+    el.innerHTML=swapHistory.slice(0,5).map(h=>`
+      <div class="swap-hist-item">
+        <div class="swap-hist-left">
+          <div class="swap-hist-pair">${h.from} → ${h.to}</div>
+          <div class="swap-hist-time">${h.time}</div>
+        </div>
+        <div class="swap-hist-amount">${h.amtFrom} → ${h.amtTo}</div>
+      </div>`).join('');
+  }
+
+  // ═══════════════════════════════════════════
+  //  INIT
+  // ═══════════════════════════════════════════
+  document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+  setInterval(()=>{
+    ['checkin','share','stake-daily'].forEach(id=>{
+      const m=state.missions[id],el=document.getElementById('cooldown-'+id);
+      if(el&&isSameDay(m.claimedAt)) el.textContent=fmtCountdown(msToMidnight());
+    });
+  },1000);
+
+  updateUI();
+  renderMissions();
+  renderSwapHistory();
+
+  // ═══════════════════════════════════════════
+  //  AUTO CONNECT AL ABRIR LA APP
+  //  MiniKit conecta automáticamente en World App
+  // ═══════════════════════════════════════════
+  async function autoConnect() {
+    // Si hay ethereum disponible intentar conectar sin mostrar splash
+    await new Promise(r => setTimeout(r, 500));
+    if (window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({method:'eth_accounts'});
+        if (accounts.length > 0) {
+          // Ya tiene cuenta — conectar automático sin splash
+          provider  = new ethers.BrowserProvider(window.ethereum);
+          signer    = await provider.getSigner();
+          walletAddr= await signer.getAddress();
+          stakingContract = new ethers.Contract(STAKING_ADDR, STAKING_ABI, signer);
+          brzlContract    = new ethers.Contract(BRZL_ADDR, ERC20_ABI, signer);
+          wldContract     = new ethers.Contract(WLD_ADDR, ERC20_ABI, signer);
+          finishConnect();
+          return;
+        }
+      } catch(e) { console.log('autoConnect check:', e); }
+    }
+    // Mostrar splash para que conecte manualmente
+    // (el splash ya es visible por defecto)
+  }
+
+  // Helper MiniKit sendTransaction - nueva API
+  // MiniKit v2 sendTransaction - API correcta
+  async function mkTx(txList) {
+    const mk = window.MiniKit || window._MiniKit;
+    if (!mk) throw new Error('MiniKit no disponible');
+
+    // Nueva API MiniKit v2: transactions (plural) con chainId
+    const sanitized = txList.map(tx => ({
+      ...tx,
+      args: tx.args ? tx.args.map(a => String(a)) : undefined
+    }));
+
+    let res;
+    // Intentar nueva API primero (MiniKit v2)
+    try {
+      res = await mk.sendTransaction({
+        chainId: 480,
+        transactions: sanitized
+      });
+    } catch(e1) {
+      console.log('v2 API failed, trying v1:', e1.message);
+      // Fallback a API v1
+      try {
+        res = await mk.sendTransaction({ transaction: sanitized });
+      } catch(e2) {
+        throw new Error('sendTransaction failed: ' + e2.message);
+      }
+    }
+
+    const payload = res?.finalPayload || res?.data || res;
+    console.log('mkTx result:', JSON.stringify(payload));
+    return payload;
+  }
+
+  // Stake con Permit2 (correcto para World App)
+  // Encodear función manualmente (sin viem/ethers para data encoding)
+  function encodeUint256(value) {
+    return BigInt(value).toString(16).padStart(64, '0');
+  }
+  function encodeAddress(addr) {
+    return addr.toLowerCase().replace('0x','').padStart(64,'0');
+  }
+
+  // Calcular selector de función (primeros 4 bytes del keccak256)
+  async function fnSelector(sig) {
+    const enc = new TextEncoder().encode(sig);
+    const hash = await crypto.subtle.digest('SHA-256', enc);
+    // Usar ethers para keccak256
+    return ethers.id(sig).slice(0, 10);
+  }
+
+  async function encodeTx(sig, ...params) {
+    const sel = await fnSelector(sig);
+    const encoded = params.map(p => {
+      if (typeof p === 'string' && p.startsWith('0x')) return encodeAddress(p);
+      return encodeUint256(p);
+    }).join('');
+    return sel + encoded;
+  }
+
+  async function permit2ApproveAndCall(token, spender, amount, contractCall) {
+    const mk = window.MiniKit || window._MiniKit;
+    if (!mk) { showToast('Error: MiniKit no disponible'); throw new Error('MiniKit no disponible'); }
+
+    showToast('Preparando transaccion...');
+
+    // Encodear Permit2.approve(token, spender, amount, expiration=0)
+    const permit2Data = await encodeTx(
+      'approve(address,address,uint160,uint48)',
+      token, spender, amount, 0
+    );
+
+    // Encodear stakeWithPermit2(amount)
+    const stakeData = await encodeTx(
+      'stakeWithPermit2(uint256)',
+      amount
+    );
+
+    const transactions = [
+      { to: PERMIT2_ADDR, data: permit2Data },
+      { to: contractCall.address, data: stakeData }
+    ];
+
+    console.log('Enviando:', JSON.stringify(transactions));
+    showToast('Esperando World App...');
+
+    let res;
+    try {
+      res = await mk.sendTransaction({ chainId: 480, transactions });
+    } catch(e) {
+      console.log('Error:', e.message);
+      showToast('Error: ' + e.message.slice(0,50));
+      throw e;
+    }
+
+    console.log('Resultado:', JSON.stringify(res));
+    const payload = res?.finalPayload || res?.data || res;
+
+    if (payload?.status === 'error' || payload?.error_code) {
+      showToast('Error: ' + (payload?.error_code || payload?.message || '').slice(0,40));
+    }
+
+    return payload;
+  }
+
+  async function doStake(amount) {
+    const amtWei = ethers.parseEther(amount.toString());
+    try {
+      if (window._useMiniKit) {
+        // Usar Permit2 + stakeWithPermit2 en una sola transaccion
+        showToast('Stakeando con Permit2...');
+        const stakeCall = {
+          address: STAKING_ADDR,
+          abi: [{"inputs":[{"name":"amount","type":"uint256"}],"name":"stakeWithPermit2","outputs":[],"type":"function"}],
+          functionName: 'stakeWithPermit2',
+          args: [amtWei.toString()]
+        };
+        const res = await permit2ApproveAndCall(BRZL_ADDR, STAKING_ADDR, amtWei, stakeCall);
+        if (res?.status !== 'error') {
+          showToast('Stakeaste ' + amount + ' BRZL!');
+          spawnCoins();
+          setTimeout(() => loadChainData(), 4000);
+        } else {
+          showToast('Error: ' + (res?.message||'').slice(0,40));
+        }
+      } else {
+        // Usar ethers normal
+        showToast('⏳ Aprobando BRZL...');
+        const allowance = await brzlContract.allowance(walletAddr, STAKING_ADDR);
+        if (allowance < amtWei) {
+          const approveTx = await brzlContract.approve(STAKING_ADDR, amtWei);
+          showToast('⏳ Esperando aprobación...');
+          await approveTx.wait();
+        }
+        showToast('⏳ Stakeando...');
+        const tx = await stakingContract.stake(amtWei);
+        await tx.wait();
+        showToast(`✅ Stakeaste ${amount} BRZL 🚀`);
+        spawnCoins();
+        await loadChainData();
+      }
+    } catch(e) {
+      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
+    }
+  }
+
+  async function doUnstake(amount) {
+    try {
+      if (window._useMiniKit && window.MiniKit) {
+        showToast('⏳ Retirando...');
+        const { finalPayload } = await window._MiniKit.sendTransaction({
+          transaction: [{
+            address: STAKING_ADDR,
+            abi: [{"inputs":[{"name":"amount","type":"uint256"}],"name":"unstake","outputs":[],"type":"function"}],
+            functionName: 'unstake',
+            args: [ethers.parseEther(amount.toString()).toString()]
+          }]
+        });
+        if (finalPayload?.status === 'success') {
+          showToast(`✅ Retiraste ${amount} BRZL`);
+          spawnCoins();
+          setTimeout(() => loadChainData(), 3000);
+        }
+      } else {
+        showToast('⏳ Retirando...');
+        const tx = await stakingContract.unstake(ethers.parseEther(amount.toString()));
+        await tx.wait();
+        showToast(`✅ Retiraste ${amount} BRZL`);
+        spawnCoins();
+        await loadChainData();
+      }
+    } catch(e) {
+      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
+    }
+  }
+
+  async function doClaimRewards() {
+    try {
+      if (window._useMiniKit && window.MiniKit) {
+        showToast('⏳ Reclamando intereses...');
+        const { finalPayload } = await window._MiniKit.sendTransaction({
+          transaction: [{
+            address: STAKING_ADDR,
+            abi: [{"inputs":[],"name":"claimRewards","outputs":[],"type":"function"}],
+            functionName: 'claimRewards',
+            args: []
+          }]
+        });
+        if (finalPayload?.status === 'success') {
+          showToast('✅ Intereses reclamados! 💰');
+          spawnCoins();
+          setTimeout(() => loadChainData(), 3000);
+        }
+      } else {
+        showToast('⏳ Reclamando intereses...');
+        const tx = await stakingContract.claimRewards();
+        await tx.wait();
+        showToast('✅ Intereses reclamados! 💰');
+        spawnCoins();
+        await loadChainData();
+      }
+    } catch(e) {
+      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
+    }
+  }
+
+  async function doBuyMembership(tierIndex, wldCost) {
+    const amtWei = ethers.parseEther(wldCost.toString());
+    try {
+      if (window._useMiniKit && window.MiniKit) {
+        showToast('⏳ Aprobando WLD...');
+        const { finalPayload } = await window._MiniKit.sendTransaction({
+          transaction: [{
+            address: WLD_ADDR,
+            abi: [{"inputs":[{"name":"spender","type":"address"},{"name":"amount","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"type":"function"}],
+            functionName: 'approve',
+            args: [STAKING_ADDR, amtWei.toString()]
+          }]
+        });
+        if (finalPayload?.status !== 'success') { showToast('❌ Aprobación cancelada'); return; }
+
+        showToast('⏳ Comprando membresía...');
+        const { finalPayload: fp2 } = await window._MiniKit.sendTransaction({
+          transaction: [{
+            address: STAKING_ADDR,
+            abi: [{"inputs":[{"name":"tierIndex","type":"uint8"}],"name":"buyMembership","outputs":[],"type":"function"}],
+            functionName: 'buyMembership',
+            args: [tierIndex]
+          }]
+        });
+        if (fp2?.status === 'success') {
+          showToast('🎉 ¡Membresía activada!');
+          spawnCoins();
+          setTimeout(() => loadChainData(), 3000);
+        }
+      } else {
+        showToast('⏳ Aprobando WLD...');
+        const allowance = await wldContract.allowance(walletAddr, STAKING_ADDR);
+        if (allowance < amtWei) {
+          const approveTx = await wldContract.approve(STAKING_ADDR, amtWei);
+          await approveTx.wait();
+        }
+        showToast('⏳ Comprando membresía...');
+        const tx = await stakingContract.buyMembership(tierIndex);
+        await tx.wait();
+        showToast('🎉 ¡Membresía activada!');
+        spawnCoins();
+        await loadChainData();
+      }
+    } catch(e) {
+      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
+    }
+  }
+
+  // Iniciar auto-conexión cuando carga la app
+  autoConnect();
+</script>
+</body>
+</html>
