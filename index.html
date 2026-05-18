@@ -874,7 +874,7 @@ body::after {
           [WLD_ADDR, TRADE_ADDR, amtWei, 0]
         ).slice(2);
 
-        const sel  = ethers.id('buyMembershipWithPermit2(uint8)').slice(0,10);
+        const sel  = ethers.id('buyMembership(uint8)').slice(0,10);
         const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[tierIndex]).slice(2);
 
         // Enviar permit2 + buyMembership en UNA SOLA llamada bundle
