@@ -893,7 +893,9 @@ body::after {
           spawnCoins();
           setTimeout(() => loadChainData(), 4000);
         } else {
-          showToast('Error: ' + (payload?.error_code || payload?.details?.simulationError || '').slice(0,50));
+          const errMsg = JSON.stringify(payload, null, 2).slice(0, 500);
+          alert('Error completo:\n' + errMsg);
+          showToast('Error: ' + (payload?.error_code || '').slice(0,50));
         }
       } else {
         showToast('Comprando membresia...');
@@ -909,7 +911,7 @@ body::after {
         await loadChainData();
       }
     } catch(e) {
-      console.error('doBuyMembership error:', e);
+      alert('Catch error:\n' + (e.message || e.reason || JSON.stringify(e)).slice(0,500));
       showToast('Error: ' + (e.reason || e.message || 'Error').slice(0,50));
     }
   }
@@ -1376,11 +1378,16 @@ body::after {
 
       showToast('Preparando swap...');
 
+      // World App pre-aprueba TODOS los tokens en la whitelist a Permit2 automáticamente
+      // Solo necesitamos: Permit2.approve(token, contrato, amount) + llamar contrato
+      const transactions = [];
+
       // Permit2 approve tokenIn al contrato de staking
       const permit2Data = await encodeTx(
         'approve(address,address,uint160,uint48)',
         tokenIn, STAKING_ADDR, amtWei, 0
       );
+      transactions.push({ to: PERMIT2_ADDR, data: permit2Data });
 
       // Llamar swapBRZLforWLD o swapWLDforBRZL en el contrato de staking
       const abiCoder = ethers.AbiCoder.defaultAbiCoder();
@@ -1395,14 +1402,20 @@ body::after {
         ['uint256','uint256'], [amtWei, minOut]
       ).slice(2);
 
-      const transactions = [
-        { to: PERMIT2_ADDR, data: permit2Data },
-        { to: STAKING_ADDR, data: swapData    }
-      ];
+      transactions.push({ to: STAKING_ADDR, data: swapData });
 
       showToast('Esperando confirmacion...');
+      console.log('SWAP DEBUG:', {
+        swapFrom, swapTo, tokenIn,
+        amtWei: amtWei.toString(),
+        minOut: minOut.toString(),
+        permit2Data,
+        swapData,
+        transactions
+      });
       const res = await mk.sendTransaction({ chainId: 480, transactions });
       const payload = res?.finalPayload || res?.data || res;
+      console.log('SWAP RESULT:', JSON.stringify(payload));
 
       if(payload?.status !== 'error' && !payload?.error_code){
         const outFmt = parseFloat(ethers.formatEther(amountOut)).toFixed(6);
