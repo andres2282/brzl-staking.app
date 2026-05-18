@@ -862,21 +862,49 @@ body::after {
 
   async function doBuyMembership(tierIndex, wldCost) {
     const amtWei = ethers.parseEther(wldCost.toString());
+    const mk = window.MiniKit || window._MiniKit;
     try {
-      showToast('⏳ Aprobando WLD...');
-      const allowance = await wldContract.allowance(walletAddr, STAKING_ADDR);
-      if (allowance < amtWei) {
-        const approveTx = await wldContract.approve(STAKING_ADDR, amtWei);
-        await approveTx.wait();
+      if (window._useMiniKit && mk) {
+        showToast('Comprando membresia...');
+        // Permit2 approve WLD al contrato
+        const permit2Sel  = ethers.id('approve(address,address,uint160,uint48)').slice(0,10);
+        const permit2Data = permit2Sel + ethers.AbiCoder.defaultAbiCoder().encode(
+          ['address','address','uint160','uint48'],
+          [WLD_ADDR, STAKING_ADDR, amtWei, 0]
+        ).slice(2);
+        // buyMembershipWithPermit2(uint8)
+        const sel  = ethers.id('buyMembershipWithPermit2(uint8)').slice(0,10);
+        const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[tierIndex]).slice(2);
+        const res  = await mk.sendTransaction({
+          chainId: 480,
+          transactions: [
+            { to: '0x000000000022D473030F116dDEE9F6B43aC78BA3', data: permit2Data },
+            { to: STAKING_ADDR, data }
+          ]
+        });
+        const payload = res?.finalPayload || res?.data || res;
+        if (payload?.status !== 'error') {
+          showToast('Membresia activada!');
+          spawnCoins();
+          setTimeout(() => loadChainData(), 4000);
+        } else {
+          showToast('Error: ' + (payload?.error_code||'').slice(0,30));
+        }
+      } else {
+        showToast('Comprando membresia...');
+        const allowance = await wldContract.allowance(walletAddr, STAKING_ADDR);
+        if (allowance < amtWei) {
+          const approveTx = await wldContract.approve(STAKING_ADDR, amtWei);
+          await approveTx.wait();
+        }
+        const tx = await stakingContract.buyMembership(tierIndex);
+        await tx.wait();
+        showToast('Membresia activada!');
+        spawnCoins();
+        await loadChainData();
       }
-      showToast('⏳ Comprando membresía...');
-      const tx = await stakingContract.buyMembership(tierIndex);
-      await tx.wait();
-      showToast('🎉 ¡Membresía activada!');
-      spawnCoins();
-      await loadChainData();
     } catch(e) {
-      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
+      showToast('Error: ' + (e.reason || e.message || 'Error').slice(0,50));
     }
   }
 
