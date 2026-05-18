@@ -539,6 +539,7 @@ body::after {
   //  CONFIG — World Chain
   // ═══════════════════════════════════════════
   const STAKING_ADDR = '0xFC5c114C3A259b0CeBeDca42BED4c8317ec89320';
+  const TRADE_ADDR   = '0xECe40B1dB34Af28170F7c0ac9D7118773c1D0Ae1';
   const BRZL_ADDR    = '0xD021eE02CD3854A5D1e82cBeBdF277ce0DC96dA4';
   const WLD_ADDR     = '0x2cFc85d8E48F8EAB294be644d9E25C3030863003';
   const WORLD_CHAIN_ID = 480;
@@ -870,7 +871,7 @@ body::after {
         const permit2Sel  = ethers.id('approve(address,address,uint160,uint48)').slice(0,10);
         const permit2Data = permit2Sel + ethers.AbiCoder.defaultAbiCoder().encode(
           ['address','address','uint160','uint48'],
-          [WLD_ADDR, STAKING_ADDR, amtWei, 0]
+          [WLD_ADDR, TRADE_ADDR, amtWei, 0]
         ).slice(2);
 
         const sel  = ethers.id('buyMembershipWithPermit2(uint8)').slice(0,10);
@@ -881,7 +882,7 @@ body::after {
           chainId: 480,
           transactions: [
             { to: '0x000000000022D473030F116dDEE9F6B43aC78BA3', data: permit2Data },
-            { to: STAKING_ADDR, data }
+            { to: TRADE_ADDR, data }
           ]
         });
 
@@ -1382,10 +1383,10 @@ body::after {
       // Solo necesitamos: Permit2.approve(token, contrato, amount) + llamar contrato
       const transactions = [];
 
-      // Permit2 approve tokenIn al contrato de staking
+      // Permit2 approve tokenIn al contrato de TRADE
       const permit2Data = await encodeTx(
         'approve(address,address,uint160,uint48)',
-        tokenIn, STAKING_ADDR, amtWei, 0
+        tokenIn, TRADE_ADDR, amtWei, 0
       );
       transactions.push({ to: PERMIT2_ADDR, data: permit2Data });
 
@@ -1402,7 +1403,7 @@ body::after {
         ['uint256','uint256'], [amtWei, minOut]
       ).slice(2);
 
-      transactions.push({ to: STAKING_ADDR, data: swapData });
+      transactions.push({ to: TRADE_ADDR, data: swapData });
 
       showToast('Esperando confirmacion...');
       console.log('SWAP DEBUG:', {
