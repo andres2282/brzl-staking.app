@@ -877,6 +877,20 @@ body::after {
         const sel  = ethers.id('buyMembership(uint8)').slice(0,10);
         const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[tierIndex]).slice(2);
 
+        // DEBUG: mostrar lo que vamos a enviar
+        const debugInfo = {
+          tierIndex: tierIndex,
+          tierIndexHex: '0x' + tierIndex.toString(16),
+          WLD_ADDR: WLD_ADDR,
+          TRADE_ADDR: TRADE_ADDR,
+          amtWei: amtWei.toString(),
+          permit2Sel: permit2Sel,
+          buyMembershipSel: sel,
+          permit2Data: permit2Data.slice(0, 100) + '...',
+          buyMembershipData: data
+        };
+        alert('DEBUG ANTES DE ENVIAR:\n' + JSON.stringify(debugInfo, null, 2));
+
         // Enviar permit2 + buyMembership en UNA SOLA llamada bundle
         const res = await mk.sendTransaction({
           chainId: 480,
