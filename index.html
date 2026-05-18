@@ -865,30 +865,35 @@ body::after {
     const mk = window.MiniKit || window._MiniKit;
     try {
       if (window._useMiniKit && mk) {
-        showToast('Comprando membresia...');
-        // Permit2 approve WLD al contrato
+        // PASO 1: Permit2 approve WLD al contrato (1 sola tx con Permit2)
+        showToast('Aprobando WLD...');
         const permit2Sel  = ethers.id('approve(address,address,uint160,uint48)').slice(0,10);
         const permit2Data = permit2Sel + ethers.AbiCoder.defaultAbiCoder().encode(
           ['address','address','uint160','uint48'],
           [WLD_ADDR, STAKING_ADDR, amtWei, 0]
         ).slice(2);
-        // buyMembershipWithPermit2(uint8)
+
         const sel  = ethers.id('buyMembershipWithPermit2(uint8)').slice(0,10);
         const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[tierIndex]).slice(2);
-        const res  = await mk.sendTransaction({
+
+        // Enviar permit2 + buyMembership en UNA SOLA llamada bundle
+        const res = await mk.sendTransaction({
           chainId: 480,
           transactions: [
             { to: '0x000000000022D473030F116dDEE9F6B43aC78BA3', data: permit2Data },
             { to: STAKING_ADDR, data }
           ]
         });
+
         const payload = res?.finalPayload || res?.data || res;
-        if (payload?.status !== 'error') {
+        console.log('buyMembership result:', JSON.stringify(payload));
+
+        if (payload?.status !== 'error' && !payload?.error_code) {
           showToast('Membresia activada!');
           spawnCoins();
           setTimeout(() => loadChainData(), 4000);
         } else {
-          showToast('Error: ' + (payload?.error_code||'').slice(0,30));
+          showToast('Error: ' + (payload?.error_code || payload?.details?.simulationError || '').slice(0,50));
         }
       } else {
         showToast('Comprando membresia...');
@@ -904,6 +909,7 @@ body::after {
         await loadChainData();
       }
     } catch(e) {
+      console.error('doBuyMembership error:', e);
       showToast('Error: ' + (e.reason || e.message || 'Error').slice(0,50));
     }
   }
@@ -1512,21 +1518,15 @@ body::after {
     return addr.toLowerCase().replace('0x','').padStart(64,'0');
   }
 
-  // Calcular selector de función (primeros 4 bytes del keccak256)
-  async function fnSelector(sig) {
-    const enc = new TextEncoder().encode(sig);
-    const hash = await crypto.subtle.digest('SHA-256', enc);
-    // Usar ethers para keccak256
-    return ethers.id(sig).slice(0, 10);
-  }
-
+  // Encodear función usando ethers AbiCoder (correcto)
   async function encodeTx(sig, ...params) {
-    const sel = await fnSelector(sig);
-    const encoded = params.map(p => {
-      if (typeof p === 'string' && p.startsWith('0x')) return encodeAddress(p);
-      return encodeUint256(p);
-    }).join('');
-    return sel + encoded;
+    // Extraer tipos del signature: "approve(address,address,uint160,uint48)"
+    const match = sig.match(/\(([^)]*)\)/);
+    const types = match ? match[1].split(',').filter(t => t.length > 0) : [];
+    const sel = ethers.id(sig).slice(0, 10);
+    if (types.length === 0) return sel;
+    const encoded = ethers.AbiCoder.defaultAbiCoder().encode(types, params);
+    return sel + encoded.slice(2);
   }
 
   async function permit2ApproveAndCall(token, spender, amount, contractCall) {
