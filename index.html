@@ -478,7 +478,7 @@ body::after {
         <div class="swap-rate-row"><span>Fee</span><span>0.3%</span></div>
         <div class="swap-rate-row"><span>Red</span><span>World Chain</span></div>
       </div>
-      <button class="btn-swap" id="btn-do-swap" onclick="doSwap()">⚡ SWAP AHORA</button>
+      <button class="btn-swap" id="btn-do-swap" onclick="openPufSwap()">⚡ COMPRAR/VENDER EN PUF</button>
     </div>
     <div class="swap-history">
       <div class="swap-history-title">HISTORIAL</div>
@@ -1432,6 +1432,14 @@ body::after {
     stateMutability: 'nonpayable'
   }];
   const POOL_FEE = 3000; // 0.3%
+
+  // Abrir PUF para hacer el swap (mas confiable que router custom)
+  function openPufSwap() {
+    if(!web3Connected){ showToast('Conecta tu wallet primero'); return; }
+    const pufUrl = 'https://world.org/mini-app?app_id=app_15daccf5b7d4ec9b7dbba044a8fdeab5&path=/token/0xD021eE02CD3854A5D1e82cBeBdF277ce0DC96dA4';
+    showToast('Abriendo PUF...');
+    window.location.href = pufUrl;
+  }
 
   // Router de PUF / TokenRegistryV2 en World Chain
   const PUF_ROUTER = '0xc301BaCE6E9409B1876347a3dC94EC24D18C1FE4';
