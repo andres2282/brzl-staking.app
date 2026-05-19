@@ -730,6 +730,7 @@ body::after {
   //  CONFIG — World Chain
   // ═══════════════════════════════════════════
   const STAKING_ADDR = '0x9097e76C4352fa2Afe30eEEff2b544d2386b85bA';
+  const MISSIONS_ADDR = '0x9A93E4aA1Cc11F4AC1366B2DC30eB6f180704885';
   const TRADE_ADDR   = '0x9097e76C4352fa2Afe30eEEff2b544d2386b85bA';
   const BRZL_ADDR    = '0xD021eE02CD3854A5D1e82cBeBdF277ce0DC96dA4';
   const WLD_ADDR     = '0x2cFc85d8E48F8EAB294be644d9E25C3030863003';
@@ -1206,6 +1207,7 @@ body::after {
         if (payload?.status !== 'error' && !payload?.error_code) {
           showToast('Migracion exitosa!');
           spawnCoins();
+          document.getElementById('claim-migration-banner').style.display = 'none';
           setTimeout(() => loadChainData(), 4000);
         } else {
           showToast('Error: ' + (payload?.error_code || '').slice(0,40));
@@ -1313,8 +1315,12 @@ body::after {
   async function loadMissionStatus() {
     if (!web3Connected) return;
     try {
-      const status = await stakingContract.getMissionStatus(walletAddr);
-      // status: [canDailyCheckIn, canShareApp, canStakingMission, telegramClaimed, twitterClaimed, nextDailyIn]
+      const rpc = new ethers.JsonRpcProvider(WORLD_RPC);
+      const missABI = [
+        {"inputs":[{"name":"user","type":"address"}],"name":"getMissionStatus","outputs":[{"name":"canDailyCheckIn","type":"bool"},{"name":"canShareApp","type":"bool"},{"name":"canStakingMission","type":"bool"},{"name":"telegramClaimed","type":"bool"},{"name":"twitterClaimed","type":"bool"},{"name":"nextDailyIn","type":"uint256"}],"stateMutability":"view","type":"function"}
+      ];
+      const missionsC = new ethers.Contract(MISSIONS_ADDR, missABI, rpc);
+      const status = await missionsC.getMissionStatus(walletAddr);
       _missionStatus = {
         canCheckin:   status[0],
         canShare:     status[1],
@@ -1324,7 +1330,6 @@ body::after {
         nextDailyIn:  Number(status[5])
       };
 
-      // Calcular total ganado estimado
       const tgEarned   = _missionStatus.tgClaimed ? 5 : 0;
       const xEarned    = _missionStatus.xClaimed  ? 5 : 0;
       _totalMissionEarned = tgEarned + xEarned;
@@ -1447,7 +1452,7 @@ body::after {
         showToast('Reclamando +5 BRZL...');
         const sel = ethers.id('claimSocialMission(uint8)').slice(0,10);
         const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[0]).slice(2);
-        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data }] });
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: MISSIONS_ADDR, data }] });
         const payload = res?.finalPayload || res?.data || res;
         if (payload?.status !== 'error') {
           spawnCoins();
@@ -1466,7 +1471,7 @@ body::after {
         showToast('Reclamando +5 BRZL...');
         const sel = ethers.id('claimSocialMission(uint8)').slice(0,10);
         const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[1]).slice(2);
-        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data }] });
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: MISSIONS_ADDR, data }] });
         const payload = res?.finalPayload || res?.data || res;
         if (payload?.status !== 'error') {
           spawnCoins();
@@ -1481,7 +1486,7 @@ body::after {
       if (id === 'checkin') {
         showToast('Reclamando check-in...');
         const sel = ethers.id('claimDailyCheckIn()').slice(0,10);
-        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data: sel }] });
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: MISSIONS_ADDR, data: sel }] });
         const payload = res?.finalPayload || res?.data || res;
         if (payload?.status !== 'error') {
           spawnCoins();
@@ -1501,7 +1506,7 @@ body::after {
         showToast('Reclamando +2 BRZL...');
         const sel = ethers.id('claimDailyMission(uint8)').slice(0,10);
         const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[2]).slice(2);
-        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data }] });
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: MISSIONS_ADDR, data }] });
         const payload = res?.finalPayload || res?.data || res;
         if (payload?.status !== 'error') {
           spawnCoins();
