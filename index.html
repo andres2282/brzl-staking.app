@@ -1462,48 +1462,40 @@ body::after {
       // Calcular amountOut con fee 0.3%
       const amtInFee  = amtWei * 997n;
       const amountOut = (amtInFee * resOut) / (resIn * 1000n + amtInFee);
-      const minOut    = amountOut * 95n / 100n; // 5% slippage
+
+      // Determinar amount0Out / amount1Out
+      const [amount0Out, amount1Out] = swapFrom === 'BRZL'
+        ? (brzlIsToken0 ? [0n, amountOut] : [amountOut, 0n])
+        : (brzlIsToken0 ? [amountOut, 0n] : [0n, amountOut]);
 
       showToast('Preparando swap...');
 
-      // World App pre-aprueba TODOS los tokens en la whitelist a Permit2 automáticamente
-      // Solo necesitamos: Permit2.approve(token, contrato, amount) + llamar contrato
-      const transactions = [];
-
-      // Permit2 approve tokenIn al contrato de TRADE
-      const permit2Data = await encodeTx(
-        'approve(address,address,uint160,uint48)',
-        tokenIn, TRADE_ADDR, amtWei, 0
-      );
-      transactions.push({ to: PERMIT2_ADDR, data: permit2Data });
-
-      // Llamar swapBRZLforWLD o swapWLDforBRZL en el contrato de staking
+      // Flujo Uniswap V2 directo al par:
+      // 1. transfer del usuario al par
+      // 2. swap() en el par
       const abiCoder = ethers.AbiCoder.defaultAbiCoder();
-      let swapSel, swapData;
 
-      if (swapFrom === 'BRZL') {
-        swapSel  = ethers.id('swapBRZLforWLD(uint256,uint256)').slice(0,10);
-      } else {
-        swapSel  = ethers.id('swapWLDforBRZL(uint256,uint256)').slice(0,10);
-      }
-      swapData = swapSel + abiCoder.encode(
-        ['uint256','uint256'], [amtWei, minOut]
+      // transfer(par, amount) en el token
+      const transferSel = ethers.id('transfer(address,uint256)').slice(0,10);
+      const transferData = transferSel + abiCoder.encode(
+        ['address','uint256'], [POOL_V2_ADDR, amtWei]
       ).slice(2);
 
-      transactions.push({ to: TRADE_ADDR, data: swapData });
+      // swap(amount0Out, amount1Out, to, data) en el par
+      const swapSel  = ethers.id('swap(uint256,uint256,address,bytes)').slice(0,10);
+      const swapData = swapSel + abiCoder.encode(
+        ['uint256','uint256','address','bytes'],
+        [amount0Out, amount1Out, walletAddr, '0x']
+      ).slice(2);
+
+      const transactions = [
+        { to: tokenIn,      data: transferData },
+        { to: POOL_V2_ADDR, data: swapData     }
+      ];
 
       showToast('Esperando confirmacion...');
-      console.log('SWAP DEBUG:', {
-        swapFrom, swapTo, tokenIn,
-        amtWei: amtWei.toString(),
-        minOut: minOut.toString(),
-        permit2Data,
-        swapData,
-        transactions
-      });
       const res = await mk.sendTransaction({ chainId: 480, transactions });
       const payload = res?.finalPayload || res?.data || res;
-      console.log('SWAP RESULT:', JSON.stringify(payload));
 
       if(payload?.status !== 'error' && !payload?.error_code){
         const outFmt = parseFloat(ethers.formatEther(amountOut)).toFixed(6);
