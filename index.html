@@ -538,8 +538,8 @@ body::after {
   // ═══════════════════════════════════════════
   //  CONFIG — World Chain
   // ═══════════════════════════════════════════
-  const STAKING_ADDR = '0xFC5c114C3A259b0CeBeDca42BED4c8317ec89320';
-  const TRADE_ADDR   = '0xB4BAb22af8D3d431751c9eD2b34A5976C89DEEE9';
+  const STAKING_ADDR = '0x9097e76C4352fa2Afe30eEEff2b544d2386b85bA';
+  const TRADE_ADDR   = '0x9097e76C4352fa2Afe30eEEff2b544d2386b85bA';
   const BRZL_ADDR    = '0xD021eE02CD3854A5D1e82cBeBdF277ce0DC96dA4';
   const WLD_ADDR     = '0x2cFc85d8E48F8EAB294be644d9E25C3030863003';
   const WORLD_CHAIN_ID = 480;
@@ -816,22 +816,53 @@ body::after {
   // ═══════════════════════════════════════════
   async function doStake(amount) {
     const amtWei = ethers.parseEther(amount.toString());
+    const mk = window.MiniKit || window._MiniKit;
     try {
-      showToast('⏳ Aprobando BRZL...');
-      const allowance = await brzlContract.allowance(walletAddr, STAKING_ADDR);
-      if (allowance < amtWei) {
-        const approveTx = await brzlContract.approve(STAKING_ADDR, amtWei);
-        showToast('⏳ Esperando aprobación...');
-        await approveTx.wait();
+      if (window._useMiniKit && mk) {
+        showToast('Aprobando BRZL...');
+        // 1. Approve estandar ERC20: BRZL.approve(contract, amount)
+        const approveSel  = ethers.id('approve(address,uint256)').slice(0,10);
+        const approveData = approveSel + ethers.AbiCoder.defaultAbiCoder().encode(
+          ['address','uint256'], [STAKING_ADDR, amtWei]
+        ).slice(2);
+        // 2. stake(amount)
+        const stakeSel  = ethers.id('stake(uint256)').slice(0,10);
+        const stakeData = stakeSel + ethers.AbiCoder.defaultAbiCoder().encode(
+          ['uint256'], [amtWei]
+        ).slice(2);
+
+        showToast('Stakeando...');
+        const res = await mk.sendTransaction({
+          chainId: 480,
+          transactions: [
+            { to: BRZL_ADDR,    data: approveData },
+            { to: STAKING_ADDR, data: stakeData   }
+          ]
+        });
+        const payload = res?.finalPayload || res?.data || res;
+        if (payload?.status !== 'error' && !payload?.error_code) {
+          showToast('Stakeaste ' + amount + ' BRZL!');
+          spawnCoins();
+          setTimeout(() => loadChainData(), 4000);
+        } else {
+          showToast('Error: ' + (payload?.error_code || '').slice(0,40));
+        }
+      } else {
+        showToast('Aprobando BRZL...');
+        const allowance = await brzlContract.allowance(walletAddr, STAKING_ADDR);
+        if (allowance < amtWei) {
+          const approveTx = await brzlContract.approve(STAKING_ADDR, amtWei);
+          await approveTx.wait();
+        }
+        showToast('Stakeando...');
+        const tx = await stakingContract.stake(amtWei);
+        await tx.wait();
+        showToast('Stakeaste ' + amount + ' BRZL!');
+        spawnCoins();
+        await loadChainData();
       }
-      showToast('⏳ Stakeando...');
-      const tx = await stakingContract.stake(amtWei);
-      await tx.wait();
-      showToast(`✅ Stakeaste ${amount} BRZL! 🚀`);
-      spawnCoins();
-      await loadChainData();
     } catch(e) {
-      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
+      showToast('Error: ' + (e.reason || e.message || 'Error').slice(0,50));
     }
   }
 
@@ -840,37 +871,31 @@ body::after {
     const mk = window.MiniKit || window._MiniKit;
     try {
       if (window._useMiniKit && mk) {
-        // PASO 1: Permit2 approve WLD al contrato (1 sola tx con Permit2)
         showToast('Aprobando WLD...');
-        const permit2Sel  = ethers.id('approve(address,address,uint160,uint48)').slice(0,10);
-        const permit2Data = permit2Sel + ethers.AbiCoder.defaultAbiCoder().encode(
-          ['address','address','uint160','uint48'],
-          [WLD_ADDR, TRADE_ADDR, amtWei, 0]
+        const approveSel  = ethers.id('approve(address,uint256)').slice(0,10);
+        const approveData = approveSel + ethers.AbiCoder.defaultAbiCoder().encode(
+          ['address','uint256'], [STAKING_ADDR, amtWei]
+        ).slice(2);
+        const buySel  = ethers.id('buyMembership(uint8)').slice(0,10);
+        const buyData = buySel + ethers.AbiCoder.defaultAbiCoder().encode(
+          ['uint8'], [tierIndex]
         ).slice(2);
 
-        const sel  = ethers.id('buyMembership(uint8)').slice(0,10);
-        const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[tierIndex]).slice(2);
-
-        // Enviar permit2 + buyMembership en UNA SOLA llamada bundle
+        showToast('Comprando membresia...');
         const res = await mk.sendTransaction({
           chainId: 480,
           transactions: [
-            { to: '0x000000000022D473030F116dDEE9F6B43aC78BA3', data: permit2Data },
-            { to: TRADE_ADDR, data }
+            { to: WLD_ADDR,     data: approveData },
+            { to: STAKING_ADDR, data: buyData     }
           ]
         });
-
         const payload = res?.finalPayload || res?.data || res;
-        console.log('buyMembership result:', JSON.stringify(payload));
-
         if (payload?.status !== 'error' && !payload?.error_code) {
           showToast('Membresia activada!');
           spawnCoins();
           setTimeout(() => loadChainData(), 4000);
         } else {
-          const errMsg = JSON.stringify(payload, null, 2).slice(0, 500);
-          alert('Error completo:\n' + errMsg);
-          showToast('Error: ' + (payload?.error_code || '').slice(0,50));
+          showToast('Error: ' + (payload?.error_code || '').slice(0,40));
         }
       } else {
         showToast('Comprando membresia...');
@@ -886,7 +911,95 @@ body::after {
         await loadChainData();
       }
     } catch(e) {
-      alert('Catch error:\n' + (e.message || e.reason || JSON.stringify(e)).slice(0,500));
+      showToast('Error: ' + (e.reason || e.message || 'Error').slice(0,50));
+    }
+  }
+
+  async function doUnstake(amount) {
+    const mk = window.MiniKit || window._MiniKit;
+    try {
+      if (window._useMiniKit && mk) {
+        showToast('Retirando...');
+        const amtWei = ethers.parseEther(amount.toString());
+        const sel  = ethers.id('unstake(uint256)').slice(0,10);
+        const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint256'],[amtWei]).slice(2);
+        const res = await mk.sendTransaction({
+          chainId: 480,
+          transactions: [{ to: STAKING_ADDR, data }]
+        });
+        const payload = res?.finalPayload || res?.data || res;
+        if (payload?.status !== 'error' && !payload?.error_code) {
+          showToast('Retiraste ' + amount + ' BRZL!');
+          spawnCoins();
+          setTimeout(() => loadChainData(), 4000);
+        } else {
+          showToast('Error: ' + (payload?.error_code || '').slice(0,40));
+        }
+      } else {
+        showToast('Retirando...');
+        const tx = await stakingContract.unstake(ethers.parseEther(amount.toString()));
+        await tx.wait();
+        showToast('Retiraste ' + amount + ' BRZL!');
+        spawnCoins();
+        await loadChainData();
+      }
+    } catch(e) {
+      showToast('Error: ' + (e.reason || e.message || 'Error').slice(0,50));
+    }
+  }
+
+  async function doClaimRewards() {
+    const mk = window.MiniKit || window._MiniKit;
+    try {
+      if (window._useMiniKit && mk) {
+        showToast('Reclamando intereses...');
+        const sel = ethers.id('claim()').slice(0,10);
+        const res = await mk.sendTransaction({
+          chainId: 480,
+          transactions: [{ to: STAKING_ADDR, data: sel }]
+        });
+        const payload = res?.finalPayload || res?.data || res;
+        if (payload?.status !== 'error' && !payload?.error_code) {
+          showToast('Intereses reclamados!');
+          spawnCoins();
+          setTimeout(() => loadChainData(), 4000);
+        } else {
+          showToast('Error: ' + (payload?.error_code || '').slice(0,40));
+        }
+      } else {
+        showToast('Reclamando intereses...');
+        const tx = await stakingContract.claim();
+        await tx.wait();
+        showToast('Intereses reclamados!');
+        spawnCoins();
+        await loadChainData();
+      }
+    } catch(e) {
+      showToast('Error: ' + (e.reason || e.message || 'Error').slice(0,50));
+    }
+  }
+
+  // Reclamar saldo migrado del contrato anterior
+  async function doClaimMigration() {
+    const mk = window.MiniKit || window._MiniKit;
+    try {
+      if (window._useMiniKit && mk) {
+        showToast('Migrando saldo...');
+        const sel = ethers.id('claimMigration()').slice(0,10);
+        const res = await mk.sendTransaction({
+          chainId: 480,
+          transactions: [{ to: STAKING_ADDR, data: sel }]
+        });
+        const payload = res?.finalPayload || res?.data || res;
+        if (payload?.status !== 'error' && !payload?.error_code) {
+          showToast('Migracion exitosa!');
+          spawnCoins();
+          setTimeout(() => loadChainData(), 4000);
+        } else {
+          showToast('Error: ' + (payload?.error_code || '').slice(0,40));
+        }
+      }
+    } catch(e) {
       showToast('Error: ' + (e.reason || e.message || 'Error').slice(0,50));
     }
   }
@@ -1562,154 +1675,6 @@ body::after {
     return payload;
   }
 
-  async function doStake(amount) {
-    const amtWei = ethers.parseEther(amount.toString());
-    try {
-      if (window._useMiniKit) {
-        // Usar Permit2 + stakeWithPermit2 en una sola transaccion
-        showToast('Stakeando con Permit2...');
-        const stakeCall = {
-          address: STAKING_ADDR,
-          abi: [{"inputs":[{"name":"amount","type":"uint256"}],"name":"stakeWithPermit2","outputs":[],"type":"function"}],
-          functionName: 'stakeWithPermit2',
-          args: [amtWei.toString()]
-        };
-        const res = await permit2ApproveAndCall(BRZL_ADDR, STAKING_ADDR, amtWei, stakeCall);
-        if (res?.status !== 'error') {
-          showToast('Stakeaste ' + amount + ' BRZL!');
-          spawnCoins();
-          setTimeout(() => loadChainData(), 4000);
-        } else {
-          showToast('Error: ' + (res?.message||'').slice(0,40));
-        }
-      } else {
-        // Usar ethers normal
-        showToast('⏳ Aprobando BRZL...');
-        const allowance = await brzlContract.allowance(walletAddr, STAKING_ADDR);
-        if (allowance < amtWei) {
-          const approveTx = await brzlContract.approve(STAKING_ADDR, amtWei);
-          showToast('⏳ Esperando aprobación...');
-          await approveTx.wait();
-        }
-        showToast('⏳ Stakeando...');
-        const tx = await stakingContract.stake(amtWei);
-        await tx.wait();
-        showToast(`✅ Stakeaste ${amount} BRZL 🚀`);
-        spawnCoins();
-        await loadChainData();
-      }
-    } catch(e) {
-      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
-    }
-  }
-
-  async function doUnstake(amount) {
-    try {
-      if (window._useMiniKit && window.MiniKit) {
-        showToast('⏳ Retirando...');
-        const { finalPayload } = await window._MiniKit.sendTransaction({
-          transaction: [{
-            address: STAKING_ADDR,
-            abi: [{"inputs":[{"name":"amount","type":"uint256"}],"name":"unstake","outputs":[],"type":"function"}],
-            functionName: 'unstake',
-            args: [ethers.parseEther(amount.toString()).toString()]
-          }]
-        });
-        if (finalPayload?.status === 'success') {
-          showToast(`✅ Retiraste ${amount} BRZL`);
-          spawnCoins();
-          setTimeout(() => loadChainData(), 3000);
-        }
-      } else {
-        showToast('⏳ Retirando...');
-        const tx = await stakingContract.unstake(ethers.parseEther(amount.toString()));
-        await tx.wait();
-        showToast(`✅ Retiraste ${amount} BRZL`);
-        spawnCoins();
-        await loadChainData();
-      }
-    } catch(e) {
-      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
-    }
-  }
-
-  async function doClaimRewards() {
-    try {
-      if (window._useMiniKit && window.MiniKit) {
-        showToast('⏳ Reclamando intereses...');
-        const { finalPayload } = await window._MiniKit.sendTransaction({
-          transaction: [{
-            address: STAKING_ADDR,
-            abi: [{"inputs":[],"name":"claimRewards","outputs":[],"type":"function"}],
-            functionName: 'claimRewards',
-            args: []
-          }]
-        });
-        if (finalPayload?.status === 'success') {
-          showToast('✅ Intereses reclamados! 💰');
-          spawnCoins();
-          setTimeout(() => loadChainData(), 3000);
-        }
-      } else {
-        showToast('⏳ Reclamando intereses...');
-        const tx = await stakingContract.claimRewards();
-        await tx.wait();
-        showToast('✅ Intereses reclamados! 💰');
-        spawnCoins();
-        await loadChainData();
-      }
-    } catch(e) {
-      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
-    }
-  }
-
-  async function doBuyMembership(tierIndex, wldCost) {
-    const amtWei = ethers.parseEther(wldCost.toString());
-    try {
-      if (window._useMiniKit && window.MiniKit) {
-        showToast('⏳ Aprobando WLD...');
-        const { finalPayload } = await window._MiniKit.sendTransaction({
-          transaction: [{
-            address: WLD_ADDR,
-            abi: [{"inputs":[{"name":"spender","type":"address"},{"name":"amount","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"type":"function"}],
-            functionName: 'approve',
-            args: [STAKING_ADDR, amtWei.toString()]
-          }]
-        });
-        if (finalPayload?.status !== 'success') { showToast('❌ Aprobación cancelada'); return; }
-
-        showToast('⏳ Comprando membresía...');
-        const { finalPayload: fp2 } = await window._MiniKit.sendTransaction({
-          transaction: [{
-            address: STAKING_ADDR,
-            abi: [{"inputs":[{"name":"tierIndex","type":"uint8"}],"name":"buyMembership","outputs":[],"type":"function"}],
-            functionName: 'buyMembership',
-            args: [tierIndex]
-          }]
-        });
-        if (fp2?.status === 'success') {
-          showToast('🎉 ¡Membresía activada!');
-          spawnCoins();
-          setTimeout(() => loadChainData(), 3000);
-        }
-      } else {
-        showToast('⏳ Aprobando WLD...');
-        const allowance = await wldContract.allowance(walletAddr, STAKING_ADDR);
-        if (allowance < amtWei) {
-          const approveTx = await wldContract.approve(STAKING_ADDR, amtWei);
-          await approveTx.wait();
-        }
-        showToast('⏳ Comprando membresía...');
-        const tx = await stakingContract.buyMembership(tierIndex);
-        await tx.wait();
-        showToast('🎉 ¡Membresía activada!');
-        spawnCoins();
-        await loadChainData();
-      }
-    } catch(e) {
-      showToast('❌ ' + (e.reason || e.message || 'Error').slice(0,50));
-    }
-  }
 
   // Iniciar auto-conexión cuando carga la app
   autoConnect();
