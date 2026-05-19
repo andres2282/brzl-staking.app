@@ -1360,6 +1360,7 @@ body::after {
 
   // Pool BRZL/WLD Uniswap V2
   const POOL_V2_ADDR = '0x75291F9bE967A7534d9921e79C083f0dD83394F6';
+  const SWAP_ADDR    = '0x93CA3565709A3532860773c8884Aa0B60Cba0cB3';
 
   async function getRealRate() {
     try {
@@ -1446,7 +1447,7 @@ body::after {
     try {
       showToast('Calculando precio...');
 
-      // Leer reserves del par V2
+      // Leer reserves del par V2 para calcular minOut
       const pairABI = [
         {"inputs":[],"name":"getReserves","outputs":[{"name":"r0","type":"uint112"},{"name":"r1","type":"uint112"},{"name":"ts","type":"uint32"}],"stateMutability":"view","type":"function"},
         {"inputs":[],"name":"token0","outputs":[{"name":"","type":"address"}],"stateMutability":"view","type":"function"}
@@ -1459,38 +1460,30 @@ body::after {
         ? (brzlIsToken0 ? [reserves.r0, reserves.r1] : [reserves.r1, reserves.r0])
         : (brzlIsToken0 ? [reserves.r1, reserves.r0] : [reserves.r0, reserves.r1]);
 
-      // Calcular amountOut con fee 0.3%
       const amtInFee  = amtWei * 997n;
       const amountOut = (amtInFee * resOut) / (resIn * 1000n + amtInFee);
-
-      // Determinar amount0Out / amount1Out
-      const [amount0Out, amount1Out] = swapFrom === 'BRZL'
-        ? (brzlIsToken0 ? [0n, amountOut] : [amountOut, 0n])
-        : (brzlIsToken0 ? [amountOut, 0n] : [0n, amountOut]);
+      const minOut    = amountOut * 95n / 100n; // 5% slippage
 
       showToast('Preparando swap...');
 
-      // Flujo Uniswap V2 directo al par:
-      // 1. transfer del usuario al par
-      // 2. swap() en el par
       const abiCoder = ethers.AbiCoder.defaultAbiCoder();
 
-      // transfer(par, amount) en el token
-      const transferSel = ethers.id('transfer(address,uint256)').slice(0,10);
-      const transferData = transferSel + abiCoder.encode(
-        ['address','uint256'], [POOL_V2_ADDR, amtWei]
+      // 1. approve(SWAP_ADDR, amount)
+      const approveSel  = ethers.id('approve(address,uint256)').slice(0,10);
+      const approveData = approveSel + abiCoder.encode(
+        ['address','uint256'], [SWAP_ADDR, amtWei]
       ).slice(2);
 
-      // swap(amount0Out, amount1Out, to, data) en el par
-      const swapSel  = ethers.id('swap(uint256,uint256,address,bytes)').slice(0,10);
+      // 2. swapBRZLforWLD o swapWLDforBRZL
+      const swapFn = swapFrom === 'BRZL' ? 'swapBRZLforWLD(uint256,uint256)' : 'swapWLDforBRZL(uint256,uint256)';
+      const swapSel  = ethers.id(swapFn).slice(0,10);
       const swapData = swapSel + abiCoder.encode(
-        ['uint256','uint256','address','bytes'],
-        [amount0Out, amount1Out, walletAddr, '0x']
+        ['uint256','uint256'], [amtWei, minOut]
       ).slice(2);
 
       const transactions = [
-        { to: tokenIn,      data: transferData },
-        { to: POOL_V2_ADDR, data: swapData     }
+        { to: tokenIn,   data: approveData },
+        { to: SWAP_ADDR, data: swapData    }
       ];
 
       showToast('Esperando confirmacion...');
