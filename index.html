@@ -230,6 +230,183 @@ body::after {
 .swap-hist-time { font-size:10px; color:rgba(255,255,255,0.3); font-weight:700; }
 .swap-hist-amount { font-size:13px; font-weight:900; color:var(--green); }
 </style>
+
+<script>
+  // ═══════════════════════════════════════════
+  // SISTEMA DE TRADUCCIÓN AUTOMÁTICA
+  // ═══════════════════════════════════════════
+  const T = {
+    es: {
+      // SPLASH SCREEN
+      'splash_subtitle': '🔨 BRZL STAKING 🔨',
+      'splash_connect_msg': 'Conectá tu wallet de\nWorld App para continuar',
+      'btn_connect': '🔗 CONECTAR WALLET',
+      // TABS
+      'tab_stake': 'STAKE',
+      'tab_missions': 'MISIONES',
+      'tab_buy': 'COMPRAR',
+      'tab_vip': 'VIP',
+      // STAKE PAGE
+      'my_membership': 'Mi Membresía actual:',
+      'no_membership': '⚠️ Sin membresía',
+      'staking_balance': 'MI BALANCE EN STAKING',
+      'interests_earned': 'INTERESES GANADOS 💰',
+      'no_active_staking': 'Sin staking activo',
+      'unlock_in': '🔒 Retiro en: ',
+      'can_withdraw': '✅ Podés retirar!',
+      'to_the_moon': 'TO THE MOON 🚀💰',
+      'btn_stake': '📈 HACER STAKING',
+      'btn_withdraw_balance': '💸 RETIRAR',
+      'btn_withdraw_interest': '💰 RETIRAR',
+      'lbl_balance': 'BALANCE',
+      'lbl_interest': 'INTERESES',
+      'btn_free_brzl': '🎁 BRZL GRATIS ACÁ',
+      // BUY PAGE
+      'buy_brzl': '🛒 COMPRAR/VENDER BRZL',
+      'buy_brzl_desc': 'Hacé tus swaps de forma segura en PUF, la mejor mini app de trading en World Chain.',
+      'btn_open_puf': '⚡ ABRIR EN PUF',
+      'buy_info_title': '💡 ¿Cómo funciona?',
+      'buy_info_1': '✓ Tocá el botón de arriba',
+      'buy_info_2': '✓ Se abre PUF dentro de World App',
+      'buy_info_3': '✓ Comprá o vendé BRZL al instante',
+      'buy_info_4': '✓ Volvé a Barzola para hacer staking',
+      // MISSIONS
+      'missions_title': '🎯 MISIONES',
+      'total_earned': 'BRZL Ganados:',
+      'mission_telegram': 'Seguir Telegram',
+      'mission_twitter': 'Seguir Twitter/X',
+      'mission_checkin': 'Check-in Diario',
+      'mission_share': 'Compartir App',
+      'mission_stake': 'Tener Stake Activo',
+      'btn_go': 'IR →',
+      'btn_claim': 'CLAIM',
+      'btn_done': '✓ HECHO',
+      'btn_ok': '✓ OK',
+      'perm_5_brzl': '+5 BRZL (una vez)',
+      'daily_2_brzl': '+2 BRZL (diario)',
+      // VIP PAGE
+      'vip_title': '🚀 VIP ZONE 🚀',
+      'vip_subtitle': 'Sube tu APY con membresías premium',
+      'pay_with_wld': 'Pagá con WLD',
+      // MODAL
+      'modal_stake': '📈 STAKE BRZL',
+      'modal_withdraw_balance': '💸 RETIRAR BALANCE',
+      'modal_withdraw_interests': '💰 RETIRAR INTERESES',
+      'modal_amount_placeholder': 'Cantidad',
+      'btn_cancel': 'CANCELAR',
+      'btn_confirm': 'CONFIRMAR',
+      'btn_max': 'MAX',
+      // TOASTS
+      'toast_connect_first': 'Conectá tu wallet primero',
+      'toast_invalid_amount': 'Ingresá un monto válido',
+      'toast_connecting': 'Conectando...',
+      'toast_connected': '✅ Conectado: ',
+      'toast_staking': 'Stakeando...',
+      'toast_withdrawing': 'Retirando...',
+      'toast_claiming': 'Reclamando intereses...',
+      'toast_buying_mem': 'Comprando membresía...',
+      'toast_mem_active': 'Membresía activada!',
+      'toast_interests_claimed': 'Intereses reclamados!',
+      'toast_error': 'Error: ',
+      'toast_opening_puf': 'Abriendo PUF...',
+      // BANNER
+      'banner_title': '⚠️ AVISO IMPORTANTE',
+      'banner_text': 'Hubo un cambio de contrato. Si hiciste stake antes y no aparece tu balance, contactanos en Telegram para devolver tus BRZL.',
+      'banner_btn': '📱 CONTACTAR EN TELEGRAM'
+    },
+    en: {
+      'splash_subtitle': '🔨 BRZL STAKING 🔨',
+      'splash_connect_msg': 'Connect your World App\nwallet to continue',
+      'btn_connect': '🔗 CONNECT WALLET',
+      'tab_stake': 'STAKE',
+      'tab_missions': 'MISSIONS',
+      'tab_buy': 'BUY',
+      'tab_vip': 'VIP',
+      'my_membership': 'My current Membership:',
+      'no_membership': '⚠️ No membership',
+      'staking_balance': 'MY STAKING BALANCE',
+      'interests_earned': 'INTEREST EARNED 💰',
+      'no_active_staking': 'No active staking',
+      'unlock_in': '🔒 Unlock in: ',
+      'can_withdraw': '✅ You can withdraw!',
+      'to_the_moon': 'TO THE MOON 🚀💰',
+      'btn_stake': '📈 STAKE NOW',
+      'btn_withdraw_balance': '💸 WITHDRAW',
+      'btn_withdraw_interest': '💰 CLAIM',
+      'lbl_balance': 'BALANCE',
+      'lbl_interest': 'INTEREST',
+      'btn_free_brzl': '🎁 FREE BRZL HERE',
+      'buy_brzl': '🛒 BUY/SELL BRZL',
+      'buy_brzl_desc': 'Trade safely on PUF, the best trading mini app on World Chain.',
+      'btn_open_puf': '⚡ OPEN IN PUF',
+      'buy_info_title': '💡 How does it work?',
+      'buy_info_1': '✓ Tap the button above',
+      'buy_info_2': '✓ PUF opens inside World App',
+      'buy_info_3': '✓ Buy or sell BRZL instantly',
+      'buy_info_4': '✓ Return to Barzola to stake',
+      'missions_title': '🎯 MISSIONS',
+      'total_earned': 'BRZL Earned:',
+      'mission_telegram': 'Follow Telegram',
+      'mission_twitter': 'Follow Twitter/X',
+      'mission_checkin': 'Daily Check-in',
+      'mission_share': 'Share App',
+      'mission_stake': 'Have Active Stake',
+      'btn_go': 'GO →',
+      'btn_claim': 'CLAIM',
+      'btn_done': '✓ DONE',
+      'btn_ok': '✓ OK',
+      'perm_5_brzl': '+5 BRZL (one-time)',
+      'daily_2_brzl': '+2 BRZL (daily)',
+      'vip_title': '🚀 VIP ZONE 🚀',
+      'vip_subtitle': 'Boost your APY with premium memberships',
+      'pay_with_wld': 'Pay with WLD',
+      'modal_stake': '📈 STAKE BRZL',
+      'modal_withdraw_balance': '💸 WITHDRAW BALANCE',
+      'modal_withdraw_interests': '💰 CLAIM INTEREST',
+      'modal_amount_placeholder': 'Amount',
+      'btn_cancel': 'CANCEL',
+      'btn_confirm': 'CONFIRM',
+      'btn_max': 'MAX',
+      'toast_connect_first': 'Connect your wallet first',
+      'toast_invalid_amount': 'Enter a valid amount',
+      'toast_connecting': 'Connecting...',
+      'toast_connected': '✅ Connected: ',
+      'toast_staking': 'Staking...',
+      'toast_withdrawing': 'Withdrawing...',
+      'toast_claiming': 'Claiming interest...',
+      'toast_buying_mem': 'Buying membership...',
+      'toast_mem_active': 'Membership activated!',
+      'toast_interests_claimed': 'Interest claimed!',
+      'toast_error': 'Error: ',
+      'toast_opening_puf': 'Opening PUF...',
+      'banner_title': '⚠️ IMPORTANT NOTICE',
+      'banner_text': 'There was a contract change. If you staked before and your balance is missing, contact us on Telegram to recover your BRZL.',
+      'banner_btn': '📱 CONTACT ON TELEGRAM'
+    }
+  };
+
+  // Detectar idioma del usuario
+  const userLang = (navigator.language || navigator.userLanguage || 'es').toLowerCase().startsWith('es') ? 'es' : 'en';
+  window._lang = userLang;
+  window.t = function(key) { return T[userLang][key] || T['es'][key] || key; };
+
+  // Aplicar traducciones a elementos con data-t
+  window.applyTranslations = function() {
+    document.querySelectorAll('[data-t]').forEach(el => {
+      const key = el.getAttribute('data-t');
+      el.textContent = t(key);
+    });
+    document.querySelectorAll('[data-t-html]').forEach(el => {
+      const key = el.getAttribute('data-t-html');
+      el.innerHTML = t(key).replace(/\\n/g, '<br>');
+    });
+    document.querySelectorAll('[data-t-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-t-placeholder');
+      el.placeholder = t(key);
+    });
+  };
+</script>
+
 </head>
 <body>
 
@@ -280,6 +457,20 @@ body::after {
     <div>Hubo un cambio de contrato. Si hiciste stake antes y no aparece tu balance, contactanos en Telegram para devolver tus BRZL.</div>
     <a href="https://t.me/BarzolaLegacy28" target="_blank" style="display:inline-block;margin-top:10px;background:#FFD700;color:#000;padding:8px 14px;border-radius:8px;font-weight:bold;text-decoration:none;font-size:13px;">📱 CONTACTAR EN TELEGRAM</a>
   </div>
+
+  <!-- BANNER MIGRACION (solo se muestra a usuarios afectados) -->
+  <div id="claim-migration-banner" style="display:none;background:linear-gradient(135deg,#0a5a0a,#1d8a1d);color:#fff;padding:16px;margin:8px 14px;border-radius:14px;border:3px solid #FFD700;box-shadow:0 0 30px rgba(255,215,0,0.6);font-size:14px;line-height:1.5;position:relative;animation:glow 1.5s ease-in-out infinite alternate;">
+    <div style="font-family:'Rye',cursive;font-size:18px;color:#FFD700;margin-bottom:8px;text-align:center;">🎁 ¡TENES BRZL PARA RECUPERAR! 🎁</div>
+    <div style="text-align:center;margin-bottom:10px;">Tu saldo del contrato anterior está listo para migrar.</div>
+    <div style="text-align:center;font-size:20px;font-weight:bold;color:#FFD700;margin-bottom:12px;" id="migration-amount">0 BRZL</div>
+    <button onclick="doClaimMigration()" style="display:block;width:100%;background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;padding:12px;border-radius:10px;font-weight:bold;text-decoration:none;font-size:15px;border:none;cursor:pointer;font-family:'Rye',cursive;letter-spacing:1px;">💎 MIGRAR MI SALDO</button>
+  </div>
+  <style>
+    @keyframes glow {
+      from { box-shadow: 0 0 20px rgba(255,215,0,0.4); }
+      to { box-shadow: 0 0 40px rgba(255,215,0,0.9); }
+    }
+  </style>
 
 
   <!-- HEADER -->
@@ -624,10 +815,11 @@ body::after {
     loadChainData();
     loadMissionStatus();
     checkMigrationBanner();
+    checkClaimMigration();
   }
 
   // Banner de aviso de cambio de contrato (visible 7 dias)
-  const MIGRATION_END_DATE = new Date('2026-05-24').getTime(); // 7 dias desde hoy
+  const MIGRATION_END_DATE = new Date('2026-05-24').getTime();
 
   function checkMigrationBanner() {
     const now = Date.now();
@@ -640,6 +832,26 @@ body::after {
   function closeMigrationBanner() {
     localStorage.setItem('migration_dismissed', '1');
     document.getElementById('migration-banner').style.display = 'none';
+  }
+
+  // Verificar si el usuario tiene saldo migrable
+  async function checkClaimMigration() {
+    try {
+      if (!walletAddr) return;
+      const rpc = new ethers.JsonRpcProvider(WORLD_RPC);
+      const migABI = [
+        {"inputs":[{"name":"user","type":"address"}],"name":"getMigrationStatus","outputs":[{"name":"canMigrate","type":"bool"},{"name":"amount","type":"uint256"},{"name":"alreadyMigrated","type":"bool"}],"stateMutability":"view","type":"function"}
+      ];
+      const c = new ethers.Contract(STAKING_ADDR, migABI, rpc);
+      const [canMigrate, amount, alreadyMigrated] = await c.getMigrationStatus(walletAddr);
+      if (canMigrate && amount > 0n) {
+        const fmt = parseFloat(ethers.formatEther(amount)).toFixed(2);
+        document.getElementById('migration-amount').textContent = fmt + ' BRZL';
+        document.getElementById('claim-migration-banner').style.display = 'block';
+      }
+    } catch(e) {
+      console.log('checkClaimMigration error:', e.message);
+    }
   }
 
   // Esperar MiniKit hasta 5 segundos
