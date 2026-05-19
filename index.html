@@ -1433,6 +1433,9 @@ body::after {
   }];
   const POOL_FEE = 3000; // 0.3%
 
+  // Router de PUF / TokenRegistryV2 en World Chain
+  const PUF_ROUTER = '0xc301BaCE6E9409B1876347a3dC94EC24D18C1FE4';
+
   async function doSwap(){
     if(!web3Connected){ showToast('Conecta tu wallet primero'); return; }
     const val = parseFloat(document.getElementById('swap-from-input').value)||0;
@@ -1441,13 +1444,15 @@ body::after {
     const mk = window.MiniKit || window._MiniKit;
     if(!mk){ showToast('MiniKit no disponible'); return; }
 
-    const amtWei  = ethers.parseEther(val.toString());
-    const tokenIn = swapFrom === 'BRZL' ? BRZL_ADDR : WLD_ADDR;
+    const amtWei   = ethers.parseEther(val.toString());
+    const tokenIn  = swapFrom === 'BRZL' ? BRZL_ADDR : WLD_ADDR;
+    const tokenOut = swapFrom === 'BRZL' ? WLD_ADDR  : BRZL_ADDR;
+    const deadline = Math.floor(Date.now()/1000) + 600;
 
     try {
       showToast('Calculando precio...');
 
-      // Leer reserves del par V2 para calcular minOut
+      // Leer reserves para calcular minOut
       const pairABI = [
         {"inputs":[],"name":"getReserves","outputs":[{"name":"r0","type":"uint112"},{"name":"r1","type":"uint112"},{"name":"ts","type":"uint32"}],"stateMutability":"view","type":"function"},
         {"inputs":[],"name":"token0","outputs":[{"name":"","type":"address"}],"stateMutability":"view","type":"function"}
@@ -1462,28 +1467,29 @@ body::after {
 
       const amtInFee  = amtWei * 997n;
       const amountOut = (amtInFee * resOut) / (resIn * 1000n + amtInFee);
-      const minOut    = amountOut * 95n / 100n; // 5% slippage
+      const minOut    = amountOut * 90n / 100n; // 10% slippage por si hay fee-on-transfer
 
       showToast('Preparando swap...');
 
       const abiCoder = ethers.AbiCoder.defaultAbiCoder();
 
-      // 1. approve(SWAP_ADDR, amount)
+      // 1. approve(PUF_ROUTER, amount) en el token
       const approveSel  = ethers.id('approve(address,uint256)').slice(0,10);
       const approveData = approveSel + abiCoder.encode(
-        ['address','uint256'], [SWAP_ADDR, amtWei]
+        ['address','uint256'], [PUF_ROUTER, amtWei]
       ).slice(2);
 
-      // 2. swapBRZLforWLD o swapWLDforBRZL
-      const swapFn = swapFrom === 'BRZL' ? 'swapBRZLforWLD(uint256,uint256)' : 'swapWLDforBRZL(uint256,uint256)';
-      const swapSel  = ethers.id(swapFn).slice(0,10);
+      // 2. swapExactTokensForTokensSupportingFeeOnTransferTokens(
+      //      amountIn, amountOutMin, path[], to, deadline)
+      const swapSel  = ethers.id('swapExactTokensForTokensSupportingFeeOnTransferTokens(uint256,uint256,address[],address,uint256)').slice(0,10);
       const swapData = swapSel + abiCoder.encode(
-        ['uint256','uint256'], [amtWei, minOut]
+        ['uint256','uint256','address[]','address','uint256'],
+        [amtWei, minOut, [tokenIn, tokenOut], walletAddr, BigInt(deadline)]
       ).slice(2);
 
       const transactions = [
-        { to: tokenIn,   data: approveData },
-        { to: SWAP_ADDR, data: swapData    }
+        { to: tokenIn,    data: approveData },
+        { to: PUF_ROUTER, data: swapData    }
       ];
 
       showToast('Esperando confirmacion...');
