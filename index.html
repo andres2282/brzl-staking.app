@@ -169,6 +169,18 @@ body::after {
 .b-diamond { background:linear-gradient(135deg,#4488cc,#224488); color:#ccddff; border:1px solid #88aaff; }
 .buy-wld { border-radius:50px; padding:8px 16px; font-family:'Rye',cursive; font-size:14px; letter-spacing:1px; border:none; cursor:pointer; background:linear-gradient(135deg,var(--gold-light),var(--gold)); color:#1a0f07; box-shadow:0 3px 0 #7a5a08; transition:transform 0.1s; white-space:nowrap; }
 .buy-wld:active { transform:translateY(2px); }
+.buy-wld:disabled { background:linear-gradient(135deg,#555,#333); color:#888; box-shadow:0 3px 0 #222; cursor:not-allowed; }
+.price-stack { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+.price-original { font-size:11px; color:#aaa; text-decoration:line-through; font-family:'Rye',cursive; letter-spacing:0.5px; }
+.discount-flag { display:inline-block; background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:8px; margin-left:6px; vertical-align:middle; font-family:'Inter',sans-serif; letter-spacing:0.5px; box-shadow:0 1px 4px rgba(34,197,94,0.5); }
+.mem-current-indicator { display:inline-block; background:linear-gradient(135deg,#fbbf24,#d97706); color:#1a0f07; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:8px; margin-left:6px; vertical-align:middle; font-family:'Inter',sans-serif; letter-spacing:0.5px; }
+.mem-locked-indicator { display:inline-block; background:#444; color:#888; font-size:9px; padding:2px 6px; border-radius:8px; margin-left:6px; vertical-align:middle; font-family:'Inter',sans-serif; letter-spacing:0.5px; }
+.buy-wld:disabled { background:linear-gradient(135deg,#555,#333); color:#888; box-shadow:0 3px 0 #222; cursor:not-allowed; }
+.price-stack { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+.price-original { font-size:11px; color:#aaa; text-decoration:line-through; font-family:'Rye',cursive; letter-spacing:0.5px; }
+.discount-flag { display:inline-block; background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:8px; margin-left:6px; vertical-align:middle; font-family:'Inter',sans-serif; letter-spacing:0.5px; box-shadow:0 1px 4px rgba(34,197,94,0.5); }
+.mem-current-indicator { display:inline-block; background:linear-gradient(135deg,#fbbf24,#d97706); color:#1a0f07; font-size:9px; font-weight:bold; padding:2px 6px; border-radius:8px; margin-left:6px; vertical-align:middle; font-family:'Inter',sans-serif; letter-spacing:0.5px; }
+.mem-locked-indicator { display:inline-block; background:#444; color:#888; font-size:9px; padding:2px 6px; border-radius:8px; margin-left:6px; vertical-align:middle; font-family:'Inter',sans-serif; letter-spacing:0.5px; }
 
 /* NAV */
 .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:430px; display:flex; background:linear-gradient(0deg,#1a0f07,#2c1a0e); border-top:2px solid var(--gold); z-index:50; box-shadow:0 -4px 20px rgba(0,0,0,0.5); }
@@ -311,7 +323,7 @@ body::after {
       'toast_opening_puf': 'Abriendo PUF...',
       // BANNER
       'banner_title': '⚠️ AVISO IMPORTANTE',
-      'banner_text': 'Hubo un cambio de contrato. Si hiciste stake antes y no aparece tu balance, contactanos en Telegram para devolver tus BRZL.',
+      'banner_text': 'Nuevo contrato seguro activo. Si pagaste membresía desde la app oficial, recibirás Bronze gratis como compensación. Contactanos en Telegram si tenés dudas.',
       'banner_btn': '📱 CONTACTAR EN TELEGRAM'
     },
     en: {
@@ -380,7 +392,7 @@ body::after {
       'toast_error': 'Error: ',
       'toast_opening_puf': 'Opening PUF...',
       'banner_title': '⚠️ IMPORTANT NOTICE',
-      'banner_text': 'There was a contract change. If you staked before and your balance is missing, contact us on Telegram to recover your BRZL.',
+      'banner_text': 'New secure contract live. If you paid membership through the official app, you will receive free Bronze as compensation. Contact us on Telegram for questions.',
       'banner_btn': '📱 CONTACT ON TELEGRAM'
     }
   };
@@ -454,7 +466,7 @@ body::after {
   <div id="migration-banner" style="display:none;background:linear-gradient(135deg,#8B0000,#FF4500);color:#fff;padding:14px 16px;margin:8px 14px;border-radius:14px;border:2px solid #FFD700;box-shadow:0 0 20px rgba(255,69,0,0.5);font-size:13px;line-height:1.5;position:relative;">
     <button onclick="closeMigrationBanner()" style="position:absolute;top:6px;right:8px;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;font-weight:bold;">✕</button>
     <div style="font-family:'Rye',cursive;font-size:16px;color:#FFD700;margin-bottom:6px;">⚠️ AVISO IMPORTANTE</div>
-    <div>Hubo un cambio de contrato. Si hiciste stake antes y no aparece tu balance, contactanos en Telegram para devolver tus BRZL.</div>
+    <div>Nuevo contrato seguro activo. Si pagaste membresía desde la app oficial, recibirás Bronze gratis como compensación. Contactanos en Telegram si tenés dudas.</div>
     <a href="https://t.me/BarzolaLegacy28" target="_blank" style="display:inline-block;margin-top:10px;background:#FFD700;color:#000;padding:8px 14px;border-radius:8px;font-weight:bold;text-decoration:none;font-size:13px;">📱 CONTACTAR EN TELEGRAM</a>
   </div>
 
@@ -614,25 +626,12 @@ body::after {
         <div class="vip-tag">VIP</div>
         <div class="vip-title">MEMBRESÍAS</div>
       </div>
-      <div class="mem-item">
-        <div class="mem-badge b-bronze">🥉 Bronze APY 75%</div>
-        <button class="buy-wld" onclick="buyMembership('Bronze',75,10)">10 WLD</button>
-      </div>
-      <div class="mem-item">
-        <div class="mem-badge b-silver">🥈 Silver APY 125%</div>
-        <button class="buy-wld" onclick="buyMembership('Silver',125,25)">25 WLD</button>
-      </div>
-      <div class="mem-item">
-        <div class="mem-badge b-gold">🥇 Gold APY 175%</div>
-        <button class="buy-wld" onclick="buyMembership('Gold',175,50)">50 WLD</button>
-      </div>
-      <div class="mem-item">
-        <div class="mem-badge b-platinum">✨ Platinum APY 325%</div>
-        <button class="buy-wld" onclick="buyMembership('Platinum',325,100)">100 WLD</button>
-      </div>
-      <div class="mem-item">
-        <div class="mem-badge b-diamond">🔷 Diamond APY 500%</div>
-        <button class="buy-wld" onclick="buyMembership('Diamond',500,200)">200 WLD</button>
+      <div id="mem-list-dynamic">
+        <!-- Renderizado por renderMembershipList() según tier actual del usuario -->
+        <div class="mem-item">
+          <div class="mem-badge b-bronze">🥉 Bronze APY 75%</div>
+          <button class="buy-wld" disabled>...</button>
+        </div>
       </div>
     </div>
     <div style="height:14px"></div>
@@ -729,9 +728,8 @@ body::after {
   // ═══════════════════════════════════════════
   //  CONFIG — World Chain
   // ═══════════════════════════════════════════
-  const STAKING_ADDR = '0x9097e76C4352fa2Afe30eEEff2b544d2386b85bA';
-  const MISSIONS_ADDR = '0x9A93E4aA1Cc11F4AC1366B2DC30eB6f180704885';
-  const TRADE_ADDR   = '0x9097e76C4352fa2Afe30eEEff2b544d2386b85bA';
+  const STAKING_ADDR = '0xab7c8CAfEB7aE1a55246EE9ec5536a601E59a7Bb';
+  const TRADE_ADDR   = '0xab7c8CAfEB7aE1a55246EE9ec5536a601E59a7Bb';
   const BRZL_ADDR    = '0xD021eE02CD3854A5D1e82cBeBdF277ce0DC96dA4';
   const WLD_ADDR     = '0x2cFc85d8E48F8EAB294be644d9E25C3030863003';
   const WORLD_CHAIN_ID = 480;
@@ -748,7 +746,8 @@ body::after {
     'function timeUntilUnlock(address) external view returns (uint256)',
     'function rewardPool() external view returns (uint256)',
     'function totalStaked() external view returns (uint256)',
-    'function tiers(uint8) external view returns (string,uint256,uint256)'
+    'function tiers(uint8) external view returns (string,uint256,uint256,uint256)',
+    'function getEffectivePrice(address user, uint8 targetTier) external view returns (uint256 originalPrice, uint256 finalPrice, uint256 discountBps)'
   ];
 
   const ERC20_ABI = [
@@ -995,6 +994,10 @@ body::after {
       document.getElementById('staking-mem-badge').textContent = hasMem ? '💎 ' + memText : '⚠️ ' + memText;
       document.getElementById('mem-tab-badge').textContent = hasMem ? '💎 ' + memText : '⚠️ Sin membresía';
 
+      // Guardar tier actual y refrescar lista dinámica de membresías
+      _currentTier = hasMem ? Number(info[2]) : 0;
+      renderMembershipList();
+
     } catch(e) {
       console.error('loadChainData error:', e);
     }
@@ -1079,8 +1082,16 @@ body::after {
     }
   }
 
-  async function doBuyMembership(tierIndex, wldCost) {
-    const amtWei = ethers.parseEther(wldCost.toString());
+  async function doBuyMembership(tierIndex, wldCostFallback) {
+    // SIEMPRE consultar precio efectivo on-chain — fuente de verdad
+    let amtWei;
+    try {
+      const [, finalP] = await stakingContract.getEffectivePrice(walletAddr, tierIndex);
+      amtWei = finalP;
+    } catch(e) {
+      // Fallback al monto pasado por UI (solo si la lectura falla)
+      amtWei = ethers.parseEther(wldCostFallback.toString());
+    }
     const mk = window.MiniKit || window._MiniKit;
     try {
       if (window._useMiniKit && mk) {
@@ -1207,7 +1218,6 @@ body::after {
         if (payload?.status !== 'error' && !payload?.error_code) {
           showToast('Migracion exitosa!');
           spawnCoins();
-          document.getElementById('claim-migration-banner').style.display = 'none';
           setTimeout(() => loadChainData(), 4000);
         } else {
           showToast('Error: ' + (payload?.error_code || '').slice(0,40));
@@ -1298,10 +1308,79 @@ body::after {
   // ═══════════════════════════════════════════
   //  MEMBRESÍA — llama blockchain
   // ═══════════════════════════════════════════
+  // Catálogo local (debe coincidir con tiers del contrato)
+  // Índices: 0=None, 1=Bronze, 2=Silver, 3=Gold, 4=Platinum, 5=Diamond
+  const TIER_CATALOG = [
+    { idx: 1, name: 'Bronze',   apy: 75,  wld: 10,  badge: 'b-bronze',   icon: '🥉' },
+    { idx: 2, name: 'Silver',   apy: 125, wld: 25,  badge: 'b-silver',   icon: '🥈' },
+    { idx: 3, name: 'Gold',     apy: 175, wld: 50,  badge: 'b-gold',     icon: '🥇' },
+    { idx: 4, name: 'Platinum', apy: 325, wld: 100, badge: 'b-platinum', icon: '✨' },
+    { idx: 5, name: 'Diamond',  apy: 500, wld: 200, badge: 'b-diamond',  icon: '🔷' },
+  ];
+
+  // tier actual del usuario (cargado desde getUserInfo)
+  let _currentTier = 0;
+
+  async function renderMembershipList() {
+    const container = document.getElementById('mem-list-dynamic');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    for (const t of TIER_CATALOG) {
+      const item = document.createElement('div');
+      item.className = 'mem-item';
+
+      // Determinar estado: current / locked (downgrade) / available
+      const isCurrent  = (t.idx === _currentTier);
+      const isLocked   = (t.idx < _currentTier);
+      const isNextUp   = (_currentTier > 0 && t.idx === _currentTier + 1);
+
+      // Calcular precio con descuento si aplica
+      let priceHTML = `<button class="buy-wld" onclick="buyMembership('${t.name}',${t.apy},${t.wld})">${t.wld} WLD</button>`;
+      let extraTag  = '';
+
+      if (isCurrent) {
+        extraTag  = '<span class="mem-current-indicator">ACTUAL</span>';
+        priceHTML = `<button class="buy-wld" disabled>ACTIVO</button>`;
+      } else if (isLocked) {
+        extraTag  = '<span class="mem-locked-indicator">YA TIENES SUPERIOR</span>';
+        priceHTML = `<button class="buy-wld" disabled>—</button>`;
+      } else if (isNextUp && web3Connected && stakingContract) {
+        // Consultar precio efectivo on-chain
+        try {
+          const [orig, finalP, discountBps] = await stakingContract.getEffectivePrice(walletAddr, t.idx);
+          if (discountBps > 0n) {
+            const origFmt  = parseFloat(ethers.formatEther(orig)).toFixed(0);
+            const finalFmt = parseFloat(ethers.formatEther(finalP)).toFixed(2);
+            const pct      = Number(discountBps) / 100;
+            extraTag = `<span class="discount-flag">-${pct}% FIDELIDAD</span>`;
+            priceHTML = `
+              <div class="price-stack">
+                <span class="price-original">${origFmt} WLD</span>
+                <button class="buy-wld" onclick="buyMembership('${t.name}',${t.apy},${finalFmt})">${finalFmt} WLD</button>
+              </div>
+            `;
+          }
+        } catch(e) {
+          console.log('getEffectivePrice error:', e.message);
+        }
+      }
+
+      item.innerHTML = `
+        <div class="mem-badge ${t.badge}">${t.icon} ${t.name} APY ${t.apy}%${extraTag}</div>
+        ${priceHTML}
+      `;
+      container.appendChild(item);
+    }
+  }
+
   async function buyMembership(name, apy, wld) {
     if (!web3Connected) { showToast('⚠️ Conectá tu wallet primero'); connectWallet(); return; }
-    const tierMap = {Bronze:0, Silver:1, Gold:2, Platinum:3, Diamond:4};
-    await doBuyMembership(tierMap[name], wld);
+    const t = TIER_CATALOG.find(x => x.name === name);
+    if (!t) return;
+    // wld que llega es el precio FINAL ya calculado (puede tener descuento)
+    await doBuyMembership(t.idx, wld);
   }
 
   // ═══════════════════════════════════════════
@@ -1315,12 +1394,8 @@ body::after {
   async function loadMissionStatus() {
     if (!web3Connected) return;
     try {
-      const rpc = new ethers.JsonRpcProvider(WORLD_RPC);
-      const missABI = [
-        {"inputs":[{"name":"user","type":"address"}],"name":"getMissionStatus","outputs":[{"name":"canDailyCheckIn","type":"bool"},{"name":"canShareApp","type":"bool"},{"name":"canStakingMission","type":"bool"},{"name":"telegramClaimed","type":"bool"},{"name":"twitterClaimed","type":"bool"},{"name":"nextDailyIn","type":"uint256"}],"stateMutability":"view","type":"function"}
-      ];
-      const missionsC = new ethers.Contract(MISSIONS_ADDR, missABI, rpc);
-      const status = await missionsC.getMissionStatus(walletAddr);
+      const status = await stakingContract.getMissionStatus(walletAddr);
+      // status: [canDailyCheckIn, canShareApp, canStakingMission, telegramClaimed, twitterClaimed, nextDailyIn]
       _missionStatus = {
         canCheckin:   status[0],
         canShare:     status[1],
@@ -1330,6 +1405,7 @@ body::after {
         nextDailyIn:  Number(status[5])
       };
 
+      // Calcular total ganado estimado
       const tgEarned   = _missionStatus.tgClaimed ? 5 : 0;
       const xEarned    = _missionStatus.xClaimed  ? 5 : 0;
       _totalMissionEarned = tgEarned + xEarned;
@@ -1452,7 +1528,7 @@ body::after {
         showToast('Reclamando +5 BRZL...');
         const sel = ethers.id('claimSocialMission(uint8)').slice(0,10);
         const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[0]).slice(2);
-        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: MISSIONS_ADDR, data }] });
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data }] });
         const payload = res?.finalPayload || res?.data || res;
         if (payload?.status !== 'error') {
           spawnCoins();
@@ -1471,7 +1547,7 @@ body::after {
         showToast('Reclamando +5 BRZL...');
         const sel = ethers.id('claimSocialMission(uint8)').slice(0,10);
         const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[1]).slice(2);
-        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: MISSIONS_ADDR, data }] });
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data }] });
         const payload = res?.finalPayload || res?.data || res;
         if (payload?.status !== 'error') {
           spawnCoins();
@@ -1486,7 +1562,7 @@ body::after {
       if (id === 'checkin') {
         showToast('Reclamando check-in...');
         const sel = ethers.id('claimDailyCheckIn()').slice(0,10);
-        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: MISSIONS_ADDR, data: sel }] });
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data: sel }] });
         const payload = res?.finalPayload || res?.data || res;
         if (payload?.status !== 'error') {
           spawnCoins();
@@ -1506,7 +1582,7 @@ body::after {
         showToast('Reclamando +2 BRZL...');
         const sel = ethers.id('claimDailyMission(uint8)').slice(0,10);
         const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[2]).slice(2);
-        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: MISSIONS_ADDR, data }] });
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data }] });
         const payload = res?.finalPayload || res?.data || res;
         if (payload?.status !== 'error') {
           spawnCoins();
