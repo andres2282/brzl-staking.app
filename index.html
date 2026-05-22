@@ -728,8 +728,8 @@ body::after {
   // ═══════════════════════════════════════════
   //  CONFIG — World Chain
   // ═══════════════════════════════════════════
-  const STAKING_ADDR = '0xab7c8CAfEB7aE1a55246EE9ec5536a601E59a7Bb';
-  const TRADE_ADDR   = '0xab7c8CAfEB7aE1a55246EE9ec5536a601E59a7Bb';
+  const STAKING_ADDR = '0xE759Be627b88EB6F5F6DCf20A6FCd2e33A58f581';
+  const TRADE_ADDR   = '0xE759Be627b88EB6F5F6DCf20A6FCd2e33A58f581';
   const MISSIONS_ADDR = '0x7dAA3D213F9A68A94B3985967F8c06E7A2DeB60F';
   const BRZL_ADDR    = '0xD021eE02CD3854A5D1e82cBeBdF277ce0DC96dA4';
   const WLD_ADDR     = '0x2cFc85d8E48F8EAB294be644d9E25C3030863003';
@@ -990,19 +990,10 @@ body::after {
         document.getElementById('interests-display').textContent = '0.00000000';
       }
 
-      // Si tiene stake pero NO tiene membresía, mostrar mensaje claro
-      if (staked > 0 && !hasMem) {
-        document.getElementById('interests-display').textContent = '0.00000000';
-        document.getElementById('timer-display').innerHTML = (secsLeft > 0
-          ? '🔒 Retiro en: ' + fmtSeconds(secsLeft) + '<br>'
-          : (staked > 0 ? '✅ Podés retirar!<br>' : '')
-        ) + '<span style="color:#FFD700">💎 Compra membresía para ganar intereses</span>';
-      }
-
       // Membresía
-      const memText = hasMem ? tierName + ' APY ' + (apyBps/100) + '%' : 'Sin membresía';
-      document.getElementById('staking-mem-badge').textContent = hasMem ? '💎 ' + memText : '⚠️ ' + memText;
-      document.getElementById('mem-tab-badge').textContent = hasMem ? '💎 ' + memText : '⚠️ Sin membresía';
+      const memText = hasMem ? tierName + ' APY ' + (apyBps/100) + '%' : 'Sin membresía · APY ' + (apyBps/100) + '%';
+      document.getElementById('staking-mem-badge').textContent = hasMem ? '💎 ' + memText : '🪙 ' + memText;
+      document.getElementById('mem-tab-badge').textContent = hasMem ? '💎 ' + memText : '🪙 ' + memText;
 
       // Guardar tier actual y refrescar lista dinámica de membresías
       _currentTier = hasMem ? Number(info[2]) : 0;
