@@ -521,7 +521,7 @@ body::after {
       <div class="stake-card-bottom">
         <div class="interest-label">Intereses Ganados 💰</div>
         <div class="interest-num" id="interests-display">0.00000000</div>
-        <div class="timer-txt" id="timer-display">Sin staking activo</div>
+        <div class="timer-txt" id="timer-display">⏱ Lock de 24h después de cada stake</div>
       </div>
     </div>
     <div class="meme-stamp">TO THE MOON 🚀🌕</div>
@@ -986,8 +986,17 @@ body::after {
       } else if (staked > 0) {
         document.getElementById('timer-display').textContent = '✅ Podés retirar!';
       } else {
-        document.getElementById('timer-display').textContent = 'Sin staking activo';
+        document.getElementById('timer-display').textContent = '⏱ Lock de 24h después de cada stake';
         document.getElementById('interests-display').textContent = '0.00000000';
+      }
+
+      // Si tiene stake pero NO tiene membresía, mostrar mensaje claro
+      if (staked > 0 && !hasMem) {
+        document.getElementById('interests-display').textContent = '0.00000000';
+        document.getElementById('timer-display').innerHTML = (secsLeft > 0
+          ? '🔒 Retiro en: ' + fmtSeconds(secsLeft) + '<br>'
+          : (staked > 0 ? '✅ Podés retirar!<br>' : '')
+        ) + '<span style="color:#FFD700">💎 Compra membresía para ganar intereses</span>';
       }
 
       // Membresía
