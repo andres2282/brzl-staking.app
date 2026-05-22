@@ -730,6 +730,7 @@ body::after {
   // ═══════════════════════════════════════════
   const STAKING_ADDR = '0xab7c8CAfEB7aE1a55246EE9ec5536a601E59a7Bb';
   const TRADE_ADDR   = '0xab7c8CAfEB7aE1a55246EE9ec5536a601E59a7Bb';
+  const MISSIONS_ADDR = '0x7dAA3D213F9A68A94B3985967F8c06E7A2DeB60F';
   const BRZL_ADDR    = '0xD021eE02CD3854A5D1e82cBeBdF277ce0DC96dA4';
   const WLD_ADDR     = '0x2cFc85d8E48F8EAB294be644d9E25C3030863003';
   const WORLD_CHAIN_ID = 480;
@@ -1394,15 +1395,27 @@ body::after {
   async function loadMissionStatus() {
     if (!web3Connected) return;
     try {
-      const status = await stakingContract.getMissionStatus(walletAddr);
-      // status: [canDailyCheckIn, canShareApp, canStakingMission, telegramClaimed, twitterClaimed, nextDailyIn]
+      // ABI del nuevo contrato de misiones
+      const MISSIONS_ABI = [
+        'function timeUntilNextCheckIn(address user) external view returns (uint256)',
+        'function hasClaimedMission(address user, string name) external view returns (bool)'
+      ];
+      const rpc = stakingContract.runner.provider || stakingContract.provider;
+      const missionsContract = new ethers.Contract(MISSIONS_ADDR, MISSIONS_ABI, rpc);
+
+      const [nextIn, tgClaimed, xClaimed] = await Promise.all([
+        missionsContract.timeUntilNextCheckIn(walletAddr),
+        missionsContract.hasClaimedMission(walletAddr, 'follow_telegram'),
+        missionsContract.hasClaimedMission(walletAddr, 'follow_x'),
+      ]);
+
       _missionStatus = {
-        canCheckin:   status[0],
-        canShare:     status[1],
-        canStaking:   status[2],
-        tgClaimed:    status[3],
-        xClaimed:     status[4],
-        nextDailyIn:  Number(status[5])
+        canCheckin:   Number(nextIn) === 0,
+        canShare:     true,
+        canStaking:   false,
+        tgClaimed:    tgClaimed,
+        xClaimed:     xClaimed,
+        nextDailyIn:  Number(nextIn)
       };
 
       // Calcular total ganado estimado
@@ -1514,23 +1527,18 @@ body::after {
     const mk = window.MiniKit || window._MiniKit;
     if (!mk) { showToast('MiniKit no disponible'); return; }
 
-    // ABIs de las funciones de misiones
-    const CHECK_IN_ABI   = [{"inputs":[],"name":"claimDailyCheckIn","outputs":[],"type":"function"}];
-    const SOCIAL_ABI     = [{"inputs":[{"name":"missionType","type":"uint8"}],"name":"claimSocialMission","outputs":[],"type":"function"}];
-    const DAILY_ABI      = [{"inputs":[{"name":"missionType","type":"uint8"}],"name":"claimDailyMission","outputs":[],"type":"function"}];
-
     try {
       if (id === 'tg') {
-        // Abrir Telegram y reclamar misión social tipo 0
+        // Abrir Telegram y reclamar misión follow_telegram
         window.open(TG_LINK, '_blank');
         showToast('Abriendo Telegram...');
         await new Promise(r => setTimeout(r, 2000));
         showToast('Reclamando +5 BRZL...');
-        const sel = ethers.id('claimSocialMission(uint8)').slice(0,10);
-        const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[0]).slice(2);
-        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data }] });
+        const sel = ethers.id('claimMission(string)').slice(0,10);
+        const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['string'],['follow_telegram']).slice(2);
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: MISSIONS_ADDR, data }] });
         const payload = res?.finalPayload || res?.data || res;
-        if (payload?.status !== 'error') {
+        if (payload?.status !== 'error' && !payload?.error_code) {
           spawnCoins();
           showToast('🎉 +5 BRZL por Telegram!');
           setTimeout(() => { loadChainData(); loadMissionStatus(); }, 3000);
@@ -1545,11 +1553,11 @@ body::after {
         showToast('Abriendo Twitter/X...');
         await new Promise(r => setTimeout(r, 2000));
         showToast('Reclamando +5 BRZL...');
-        const sel = ethers.id('claimSocialMission(uint8)').slice(0,10);
-        const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[1]).slice(2);
-        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data }] });
+        const sel = ethers.id('claimMission(string)').slice(0,10);
+        const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['string'],['follow_x']).slice(2);
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: MISSIONS_ADDR, data }] });
         const payload = res?.finalPayload || res?.data || res;
-        if (payload?.status !== 'error') {
+        if (payload?.status !== 'error' && !payload?.error_code) {
           spawnCoins();
           showToast('🎉 +5 BRZL por Twitter/X!');
           setTimeout(() => { loadChainData(); loadMissionStatus(); }, 3000);
@@ -1562,9 +1570,9 @@ body::after {
       if (id === 'checkin') {
         showToast('Reclamando check-in...');
         const sel = ethers.id('claimDailyCheckIn()').slice(0,10);
-        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data: sel }] });
+        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: MISSIONS_ADDR, data: sel }] });
         const payload = res?.finalPayload || res?.data || res;
-        if (payload?.status !== 'error') {
+        if (payload?.status !== 'error' && !payload?.error_code) {
           spawnCoins();
           showToast('🎉 +2 BRZL check-in diario!');
           setTimeout(() => { loadChainData(); loadMissionStatus(); }, 3000);
@@ -1578,19 +1586,7 @@ body::after {
         const txt = '🔨 Estoy ganando BRZL en Barzola Legacy! Vos también 🚀 ';
         if (navigator.share) navigator.share({ title: 'Barzola Legacy', text: txt, url: TG_LINK });
         else { navigator.clipboard?.writeText(txt + TG_LINK); showToast('📋 Copiado!'); }
-        await new Promise(r => setTimeout(r, 1500));
-        showToast('Reclamando +2 BRZL...');
-        const sel = ethers.id('claimDailyMission(uint8)').slice(0,10);
-        const data = sel + ethers.AbiCoder.defaultAbiCoder().encode(['uint8'],[2]).slice(2);
-        const res = await mk.sendTransaction({ chainId: 480, transactions: [{ to: STAKING_ADDR, data }] });
-        const payload = res?.finalPayload || res?.data || res;
-        if (payload?.status !== 'error') {
-          spawnCoins();
-          showToast('🎉 +2 BRZL por compartir!');
-          setTimeout(() => { loadChainData(); loadMissionStatus(); }, 3000);
-        } else {
-          showToast('Ya compartiste hoy');
-        }
+        showToast('Compartido!');
         return;
       }
 
